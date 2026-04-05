@@ -8,487 +8,459 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
 <style>
-  :root {
-    --primary: #6366f1;
-    --primary-light: #818cf8;
-    --secondary: #a855f7;
-    --accent: #f472b6;
-    --glass-bg: rgba(255,255,255,0.04);
-    --glass-border: rgba(255,255,255,0.08);
-    --glass-hover: rgba(255,255,255,0.08);
-    --glow-indigo: 0 0 30px rgba(99,102,241,0.3);
-    --glow-purple: 0 0 30px rgba(168,85,247,0.3);
-    --glow-pink: 0 0 30px rgba(244,114,182,0.3);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Prompt', 'Sarabun', sans-serif;
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
-    min-height: 100vh;
-    color: #e2e8f0;
-    overflow-x: hidden;
-  }
+/* ════════════════════════════════════════
+   ROOT VARIABLES & RESET
+════════════════════════════════════════ */
+:root {
+  --primary:#6366f1; --primary-light:#818cf8;
+  --secondary:#a855f7; --accent:#f472b6;
+  --glass-bg:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.08);
+  --glass-hover:rgba(255,255,255,0.08);
+  --glow-i:0 0 30px rgba(99,102,241,.3);
+  --glow-p:0 0 30px rgba(168,85,247,.3);
+  --glow-k:0 0 30px rgba(244,114,182,.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Prompt','Sarabun',sans-serif;
+  background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 40%,#0f172a 100%);
+  min-height:100vh; color:#e2e8f0; overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(99,102,241,.4);border-radius:10px;}
 
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 10px; }
+/* ── Glass ── */
+.glass{
+  background:var(--glass-bg);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:1.25rem;
+}
+.glow-i{box-shadow:var(--glow-i);}
 
-  /* ── Glass Card ── */
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 1.25rem;
-  }
-  .glass-dark {
-    background: rgba(15,23,42,0.6);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 1.25rem;
-  }
-  .glow-indigo { box-shadow: var(--glow-indigo); }
-  .glow-purple { box-shadow: var(--glow-purple); }
-  .glow-pink   { box-shadow: var(--glow-pink); }
+/* ── Gradient Button ── */
+.btn-primary{
+  background:linear-gradient(135deg,#6366f1,#a855f7);
+  border:none;cursor:pointer;font-family:'Prompt',sans-serif;
+  position:relative;overflow:hidden;transition:all .3s;
+  box-shadow:0 4px 20px rgba(99,102,241,.4);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.6);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 
-  /* ── Gradient Buttons ── */
-  .btn-primary {
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    border: none; cursor: pointer; font-family: 'Prompt', sans-serif;
-    position: relative; overflow: hidden; transition: all 0.3s;
-    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.6); }
-  .btn-primary::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .btn-primary:hover::after { opacity: 1; }
+/* ── Ripple ── */
+.ripple-container{position:relative;overflow:hidden;}
+.ripple{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,.3);pointer-events:none;
+  animation:rippleAnim .6s linear;
+}
+@keyframes rippleAnim{
+  from{width:0;height:0;opacity:1;transform:translate(-50%,-50%);}
+  to{width:200px;height:200px;opacity:0;transform:translate(-50%,-50%);}
+}
 
-  /* Ripple */
-  .ripple-container { position: relative; overflow: hidden; }
-  .ripple {
-    position: absolute; border-radius: 50%;
-    background: rgba(255,255,255,0.3); pointer-events: none;
-    animation: rippleAnim 0.6s linear;
-  }
-  @keyframes rippleAnim {
-    from { width:0; height:0; opacity:1; transform:translate(-50%,-50%); }
-    to   { width:200px; height:200px; opacity:0; transform:translate(-50%,-50%); }
-  }
+/* ── Sidebar ── */
+.sidebar{
+  position:fixed;top:0;left:0;height:100vh;width:260px;z-index:50;
+  background:rgba(15,23,42,.88);backdrop-filter:blur(24px);
+  border-right:1px solid rgba(255,255,255,.06);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.sidebar.collapsed{transform:translateX(-260px);}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 16px;border-radius:12px;cursor:pointer;
+  transition:all .25s;font-size:.92rem;font-weight:500;
+  color:#94a3b8;position:relative;overflow:hidden;
+}
+.nav-item:hover{background:var(--glass-hover);color:#e2e8f0;}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(99,102,241,.25),rgba(168,85,247,.15));
+  color:#818cf8;
+  box-shadow:inset 0 0 0 1px rgba(99,102,241,.3),0 0 16px rgba(99,102,241,.15);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;background:linear-gradient(#6366f1,#a855f7);
+  border-radius:0 4px 4px 0;
+}
 
-  /* ── Sidebar ── */
-  .sidebar {
-    position: fixed; top:0; left:0; height:100vh; width:260px; z-index:50;
-    background: rgba(15,23,42,0.85);
-    backdrop-filter: blur(24px);
-    border-right: 1px solid rgba(255,255,255,0.06);
-    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-  }
-  .sidebar.collapsed { transform: translateX(-260px); }
-  .nav-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 11px 16px; border-radius: 12px; cursor: pointer;
-    transition: all 0.25s; font-size: 0.92rem; font-weight: 500;
-    color: #94a3b8; position: relative; overflow: hidden;
-  }
-  .nav-item:hover { background: var(--glass-hover); color: #e2e8f0; }
-  .nav-item.active {
-    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.15));
-    color: #818cf8;
-    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3), 0 0 16px rgba(99,102,241,0.15);
-  }
-  .nav-item.active::before {
-    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 60%; background: linear-gradient(#6366f1, #a855f7);
-    border-radius: 0 4px 4px 0;
-  }
+/* ── Navbar ── */
+.navbar{
+  position:fixed;top:0;right:0;z-index:40;height:64px;
+  background:rgba(15,23,42,.82);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  transition:left .35s cubic-bezier(.4,0,.2,1);
+}
 
-  /* ── Navbar ── */
-  .navbar {
-    position: fixed; top:0; right:0; z-index:40; height:64px;
-    background: rgba(15,23,42,0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
-  }
+/* ── Main ── */
+.main-content{
+  margin-left:260px;padding-top:64px;
+  min-height:100vh;transition:margin-left .35s cubic-bezier(.4,0,.2,1);
+}
+.main-content.expanded{margin-left:0;}
 
-  /* ── Main Content ── */
-  .main-content {
-    margin-left: 260px; padding-top: 64px;
-    min-height: 100vh; transition: margin-left 0.35s cubic-bezier(0.4,0,0.2,1);
-  }
-  .main-content.expanded { margin-left: 0; }
+/* ── Bottom Nav ── */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:rgba(15,23,42,.92);backdrop-filter:blur(24px);
+  border-top:1px solid rgba(255,255,255,.06);
+  padding:8px 0 max(8px,env(safe-area-inset-bottom));
+}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:6px 12px;border-radius:12px;
+  transition:all .25s;color:#64748b;font-size:.65rem;
+}
+.bottom-nav-item.active{color:#818cf8;}
+.fab{
+  width:52px;height:52px;border-radius:50%;margin-bottom:4px;
+  background:linear-gradient(135deg,#6366f1,#a855f7);
+  box-shadow:0 4px 20px rgba(99,102,241,.5);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .3s;
+}
+.fab:hover{transform:scale(1.1) rotate(45deg);}
 
-  /* ── Bottom Nav ── */
-  .bottom-nav {
-    display: none; position: fixed; bottom: 0; left:0; right:0; z-index:50;
-    background: rgba(15,23,42,0.9); backdrop-filter: blur(24px);
-    border-top: 1px solid rgba(255,255,255,0.06);
-    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  }
-  .bottom-nav-item {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    cursor: pointer; padding: 6px 12px; border-radius: 12px;
-    transition: all 0.25s; color: #64748b; font-size: 0.65rem;
-  }
-  .bottom-nav-item.active { color: #818cf8; }
-  .fab {
-    width: 52px; height: 52px; border-radius: 50%; margin-bottom: 4px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    box-shadow: 0 4px 20px rgba(99,102,241,0.5);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.3s;
-  }
-  .fab:hover { transform: scale(1.1) rotate(45deg); }
+/* ── Stat Card ── */
+.stat-card{
+  background:var(--glass-bg);backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:20px;
+  padding:20px;transition:all .3s;
+}
+.stat-card:hover{transform:translateY(-4px);border-color:rgba(99,102,241,.3);}
 
-  /* ── Stat Cards ── */
-  .stat-card {
-    background: var(--glass-bg); backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border); border-radius: 20px;
-    padding: 22px; transition: all 0.3s; cursor: default;
-  }
-  .stat-card:hover { transform: translateY(-4px); border-color: rgba(99,102,241,0.3); }
+/* ── Badges ── */
+.badge{padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:600;}
+.badge-green{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.badge-red{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.badge-yellow{background:rgba(234,179,8,.15);color:#facc15;border:1px solid rgba(234,179,8,.3);}
+.badge-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.badge-indigo{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3);}
+.tag{padding:2px 10px;border-radius:999px;font-size:.7rem;font-weight:600;}
 
-  /* ── Status Badge ── */
-  .badge { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
-  .badge-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
-  .badge-red   { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
-  .badge-yellow{ background: rgba(234,179,8,0.15);  color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
-  .badge-blue  { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
-  .badge-indigo{ background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+/* ── Toast ── */
+.toast-container{position:fixed;top:76px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;}
+.toast{
+  display:flex;align-items:center;gap:12px;padding:14px 18px;
+  border-radius:14px;min-width:280px;max-width:340px;font-size:.875rem;
+  backdrop-filter:blur(20px);border:1px solid;
+  animation:slideInRight .4s cubic-bezier(.4,0,.2,1),fadeOut .4s 3s forwards;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.toast-success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#4ade80;}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#f87171;}
+.toast-info{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.3);color:#818cf8;}
+@keyframes slideInRight{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes fadeOut{from{opacity:1;}to{opacity:0;pointer-events:none;}}
 
-  /* ── Category Tags ── */
-  .tag { padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+/* ── Modal ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(4px);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{
+  background:linear-gradient(135deg,rgba(15,23,42,.97),rgba(30,27,75,.97));
+  border:1px solid rgba(255,255,255,.1);border-radius:24px 24px 0 0;
+  width:100%;max-width:520px;padding:28px 24px 32px;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);
+  max-height:90vh;overflow-y:auto;
+}
+.modal-overlay.open .modal-box{transform:translateY(0);}
+@media(min-width:640px){
+  .modal-overlay{align-items:center;}
+  .modal-box{border-radius:24px;transform:scale(.92) translateY(20px);}
+  .modal-overlay.open .modal-box{transform:scale(1) translateY(0);}
+}
 
-  /* ── Toast ── */
-  .toast-container { position: fixed; top: 76px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-  .toast {
-    display: flex; align-items: center; gap: 12px; padding: 14px 18px;
-    border-radius: 14px; min-width: 300px; font-size: 0.875rem;
-    backdrop-filter: blur(20px); border: 1px solid;
-    animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1), fadeOut 0.4s 3s forwards;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  .toast-success { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); color: #4ade80; }
-  .toast-error   { background: rgba(239,68,68,0.12);  border-color: rgba(239,68,68,0.3);  color: #f87171; }
-  .toast-info    { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: #818cf8; }
-  @keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-  @keyframes fadeOut { from { opacity:1; } to { opacity:0; pointer-events:none; } }
+/* ── Input ── */
+.input-glass{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:12px 14px;
+  font-family:'Prompt',sans-serif;font-size:.9rem;
+  color:#e2e8f0;width:100%;outline:none;transition:all .25s;
+}
+.input-glass:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.2);}
+.input-glass::placeholder{color:#475569;}
+select.input-glass option{background:#1e1b4b;color:#e2e8f0;}
 
-  /* ── Modal ── */
-  .modal-overlay {
-    position: fixed; inset:0; z-index:200;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-    display: flex; align-items: flex-end; justify-content: center;
-    opacity:0; pointer-events:none; transition: opacity 0.3s;
-  }
-  .modal-overlay.open { opacity:1; pointer-events:all; }
-  .modal-box {
-    background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,27,75,0.97));
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 24px 24px 0 0;
-    width: 100%; max-width: 520px; padding: 28px 24px 32px;
-    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
-    max-height: 90vh; overflow-y: auto;
-  }
-  .modal-overlay.open .modal-box { transform: translateY(0); }
-  @media(min-width:640px) {
-    .modal-overlay { align-items: center; }
-    .modal-box { border-radius: 24px; transform: scale(0.92) translateY(20px); }
-    .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
-  }
+.floating-label{position:relative;}
+.floating-label label{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:.875rem;color:#64748b;pointer-events:none;transition:all .2s;
+}
+.floating-label input:focus+label,
+.floating-label input:not(:placeholder-shown)+label{
+  top:-10px;font-size:.75rem;color:#818cf8;
+  background:rgba(15,23,42,.9);padding:0 6px;border-radius:4px;
+}
 
-  /* ── Input ── */
-  .input-glass {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px; padding: 12px 14px;
-    font-family: 'Prompt', sans-serif; font-size: 0.9rem;
-    color: #e2e8f0; width: 100%; outline: none; transition: all 0.25s;
-  }
-  .input-glass:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
-  .input-glass::placeholder { color: #475569; }
+/* ── Pages ── */
+.page{display:none;animation:fadeSlideUp .4s cubic-bezier(.4,0,.2,1);}
+.page.active{display:block;}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-  .floating-label { position: relative; }
-  .floating-label label {
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    font-size: 0.875rem; color: #64748b; pointer-events: none; transition: all 0.2s;
-  }
-  .floating-label input:focus + label,
-  .floating-label input:not(:placeholder-shown) + label {
-    top: -10px; font-size: 0.75rem; color: #818cf8;
-    background: rgba(15,23,42,0.9); padding: 0 6px; border-radius: 4px;
-  }
+/* ── Skeleton ── */
+.skeleton{
+  background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.1) 50%,rgba(255,255,255,.05) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;
+}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
 
-  /* ── Pages ── */
-  .page { display: none; animation: fadeSlideUp 0.4s cubic-bezier(0.4,0,0.2,1); }
-  .page.active { display: block; }
-  @keyframes fadeSlideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+/* ── Product Card ── */
+.product-card{
+  background:var(--glass-bg);backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:20px;
+  overflow:hidden;transition:all .35s;cursor:pointer;
+}
+.product-card:hover{transform:scale(1.03) translateY(-4px);border-color:rgba(99,102,241,.4);box-shadow:0 20px 40px rgba(0,0,0,.3),var(--glow-i);}
 
-  /* ── Skeleton ── */
-  .skeleton {
-    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-    background-size: 200% 100%; animation: shimmer 1.5s infinite;
-    border-radius: 8px;
-  }
-  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+/* ── Table ── */
+.data-table{width:100%;border-collapse:separate;border-spacing:0 5px;}
+.data-table thead th{
+  padding:10px 14px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.08em;color:#64748b;font-weight:600;text-align:left;
+}
+.data-table tbody tr{background:var(--glass-bg);transition:all .2s;}
+.data-table tbody tr:hover{background:rgba(99,102,241,.08);}
+.data-table tbody td{padding:12px 14px;font-size:.85rem;}
+.data-table tbody td:first-child{border-radius:12px 0 0 12px;}
+.data-table tbody td:last-child{border-radius:0 12px 12px 0;}
 
-  /* ── Product Card ── */
-  .product-card {
-    background: var(--glass-bg); backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border); border-radius: 20px;
-    overflow: hidden; transition: all 0.35s; cursor: pointer;
-  }
-  .product-card:hover { transform: scale(1.03) translateY(-4px); border-color: rgba(99,102,241,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.3), var(--glow-indigo); }
+/* ── Confirm ── */
+.confirm-overlay{
+  position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.76);
+  backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.confirm-overlay.open{opacity:1;pointer-events:all;}
+.confirm-box{
+  background:linear-gradient(135deg,rgba(15,23,42,.98),rgba(30,27,75,.98));
+  border:1px solid rgba(255,255,255,.12);border-radius:24px;
+  padding:32px 28px;max-width:380px;width:90%;text-align:center;
+  transform:scale(.88);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.confirm-overlay.open .confirm-box{transform:scale(1);}
 
-  /* ── Table ── */
-  .data-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
-  .data-table thead th { padding: 12px 16px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; font-weight: 600; text-align: left; }
-  .data-table tbody tr {
-    background: var(--glass-bg); transition: all 0.2s;
-  }
-  .data-table tbody tr:hover { background: rgba(99,102,241,0.08); transform: scale(1.002); }
-  .data-table tbody td { padding: 14px 16px; font-size: 0.875rem; }
-  .data-table tbody td:first-child { border-radius: 12px 0 0 12px; }
-  .data-table tbody td:last-child  { border-radius: 0 12px 12px 0; }
+/* ── Login ── */
+.login-bg{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 30% 30%,rgba(99,102,241,.2) 0%,transparent 60%),
+             radial-gradient(ellipse at 70% 70%,rgba(168,85,247,.15) 0%,transparent 60%),
+             linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%);
+  position:fixed;inset:0;z-index:100;
+}
+.login-card{
+  background:rgba(255,255,255,.04);backdrop-filter:blur(32px);
+  border:1px solid rgba(255,255,255,.1);border-radius:28px;
+  padding:40px 36px;width:90%;max-width:420px;
+  box-shadow:0 32px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);
+}
 
-  /* ── Confirm Dialog ── */
-  .confirm-overlay {
-    position: fixed; inset:0; z-index:300; background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(8px); display:flex; align-items:center; justify-content:center;
-    opacity:0; pointer-events:none; transition: opacity 0.25s;
-  }
-  .confirm-overlay.open { opacity:1; pointer-events:all; }
-  .confirm-box {
-    background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,27,75,0.98));
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
-    padding: 32px 28px; max-width: 380px; width: 90%;
-    text-align: center; transform: scale(0.88);
-    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  }
-  .confirm-overlay.open .confirm-box { transform: scale(1); }
+/* ── Setup Banner ── */
+.setup-banner{
+  background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(249,115,22,.1));
+  border:1px solid rgba(251,191,36,.3);border-radius:14px;
+  padding:14px 16px;margin-bottom:16px;
+  display:flex;align-items:flex-start;gap:10px;
+}
 
-  /* ── Login ── */
-  .login-bg {
-    min-height: 100vh; display:flex; align-items:center; justify-content:center;
-    background: radial-gradient(ellipse at 30% 30%, rgba(99,102,241,0.2) 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 70%, rgba(168,85,247,0.15) 0%, transparent 60%),
-                linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-    position: fixed; inset: 0; z-index: 100;
-  }
-  .login-card {
-    background: rgba(255,255,255,0.04); backdrop-filter: blur(32px);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;
-    padding: 40px 36px; width: 90%; max-width: 400px;
-    box-shadow: 0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-  }
+/* ── Connection Status ── */
+.conn-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  animation:pulse 2s infinite;
+}
+.conn-dot.online{background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.6);}
+.conn-dot.offline{background:#f87171;box-shadow:0 0 6px rgba(248,113,113,.6);}
+.conn-dot.loading{background:#fbbf24;box-shadow:0 0 6px rgba(251,191,36,.6);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
 
-  /* ── Responsive ── */
-  @media(max-width: 768px) {
-    .sidebar { transform: translateX(-260px); }
-    .sidebar.mobile-open { transform: translateX(0); }
-    .main-content { margin-left: 0 !important; padding-bottom: 80px; }
-    .navbar { left: 0 !important; }
-    .bottom-nav { display: flex; justify-content: space-around; align-items: center; }
-    .desktop-only { display: none !important; }
-    .mobile-only { display: block !important; }
-  }
-  @media(min-width: 769px) {
-    .mobile-only { display: none !important; }
-  }
+/* ── Loading Overlay ── */
+.loading-overlay{
+  position:fixed;inset:0;z-index:400;
+  background:rgba(15,23,42,.8);backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.loading-overlay.show{opacity:1;pointer-events:all;}
+.spin{
+  width:48px;height:48px;border-radius:50%;
+  border:3px solid rgba(99,102,241,.2);
+  border-top-color:#6366f1;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-  /* ── Misc ── */
-  .glow-text { background: linear-gradient(135deg, #818cf8, #a855f7, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
-  select.input-glass option { background: #1e1b4b; color: #e2e8f0; }
-  .chart-container { position: relative; height: 240px; }
-  @media(min-width: 640px) { .chart-container { height: 280px; } }
+/* ── Misc ── */
+.glow-text{background:linear-gradient(135deg,#818cf8,#a855f7,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);}
+.chart-container{position:relative;height:240px;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.table-scroll::-webkit-scrollbar{height:4px;}
+.notif-dot{
+  position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;
+  background:linear-gradient(135deg,#f472b6,#a855f7);
+  box-shadow:0 0 6px rgba(244,114,182,.6);
+}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:45;background:rgba(0,0,0,.5);}
+.sidebar-overlay.show{display:block;}
 
-  /* Overlay for mobile sidebar */
-  .sidebar-overlay {
-    display: none; position: fixed; inset: 0; z-index: 45;
-    background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
-  }
-  .sidebar-overlay.show { display: block; }
+/* ── Toggle ── */
+.toggle-slider{
+  position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+  background:rgba(255,255,255,.1);border-radius:26px;border:1px solid rgba(255,255,255,.1);transition:.3s;
+}
+.toggle-slider::before{
+  content:'';position:absolute;height:20px;width:20px;left:2px;bottom:2px;
+  background:white;border-radius:50%;transition:.3s;
+}
+input:checked+.toggle-slider{background:linear-gradient(135deg,#6366f1,#a855f7);border-color:rgba(99,102,241,.5);}
+input:checked+.toggle-slider::before{transform:translateX(22px);}
 
-  /* Notification dot */
-  .notif-dot {
-    position: absolute; top: 2px; right: 2px;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: linear-gradient(135deg, #f472b6, #a855f7);
-    box-shadow: 0 0 6px rgba(244,114,182,0.6);
-  }
-
-  /* Scrollable table container */
-  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .table-scroll::-webkit-scrollbar { height: 4px; }
-
-  /* Range chart height mobile */
-  @media(max-width: 640px) { .chart-container { height: 200px; } }
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-260px);}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .main-content{margin-left:0!important;padding-bottom:80px;}
+  .navbar{left:0!important;}
+  .bottom-nav{display:flex;justify-content:space-around;align-items:center;}
+  .desktop-only{display:none!important;}
+  .mobile-only{display:block!important;}
+  .chart-container{height:200px;}
+}
+@media(min-width:769px){.mobile-only{display:none!important;}}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     LOGIN PAGE
-══════════════════════════════════════ -->
+<!-- ════════════════════════════
+  LOGIN PAGE
+════════════════════════════ -->
 <div id="loginPage" class="login-bg">
-  <!-- Decorative orbs -->
-  <div style="position:absolute;top:10%;left:15%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.15),transparent);pointer-events:none;"></div>
-  <div style="position:absolute;bottom:15%;right:10%;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent);pointer-events:none;"></div>
+  <div style="position:absolute;top:10%;left:15%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.15),transparent);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:15%;right:10%;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,.12),transparent);pointer-events:none;"></div>
 
   <div class="login-card">
-    <!-- Logo -->
     <div class="flex items-center justify-center gap-3 mb-8">
-      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(99,102,241,0.4);">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(99,102,241,.4);">
         <i data-lucide="shopping-bag" style="width:24px;height:24px;color:white;"></i>
       </div>
-      <div>
-        <div class="font-bold text-xl glow-text">ShopAccount</div>
-        <div style="font-size:0.7rem;color:#64748b;margin-top:-2px;">Pro Edition</div>
+      <div><div class="font-bold text-xl glow-text">ShopAccount</div><div style="font-size:.7rem;color:#64748b;">Pro + Google Sheets</div></div>
+    </div>
+
+    <!-- Apps Script URL Setup -->
+    <div class="setup-banner mb-6">
+      <i data-lucide="alert-triangle" style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;margin-top:1px;"></i>
+      <div style="font-size:.78rem;color:#fde68a;line-height:1.5;">
+        <strong>ตั้งค่าก่อนใช้งาน:</strong> วาง Apps Script URL ด้านล่าง<br>
+        <span style="color:#94a3b8;">(Deploy → Web App URL จาก Google Apps Script)</span>
       </div>
     </div>
 
-    <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-white mb-1">ยินดีต้อนรับ</h1>
-      <p style="color:#64748b;font-size:0.875rem;">เข้าสู่ระบบบัญชีร้านค้าออนไลน์</p>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">Google Apps Script URL</label>
+      <input type="url" id="scriptUrlInput" class="input-glass" placeholder="https://script.google.com/macros/s/..." style="font-size:.8rem;">
     </div>
 
-    <!-- Inputs -->
-    <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px;">
+    <div class="divider mb-4"></div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
       <div class="floating-label">
         <input type="email" class="input-glass" placeholder=" " id="loginEmail" value="admin@shopaccount.th">
         <label>อีเมล</label>
       </div>
-      <div class="floating-label" style="position:relative;">
-        <input type="password" class="input-glass" placeholder=" " id="loginPass" value="••••••••">
+      <div class="floating-label">
+        <input type="password" class="input-glass" placeholder=" " id="loginPass" value="password">
         <label>รหัสผ่าน</label>
       </div>
     </div>
 
-    <div class="flex items-center justify-between mb-6" style="font-size:0.8rem;">
-      <label style="display:flex;align-items:center;gap:8px;color:#94a3b8;cursor:pointer;">
-        <input type="checkbox" checked style="accent-color:#6366f1;"> จดจำฉัน
-      </label>
-      <span style="color:#818cf8;cursor:pointer;">ลืมรหัสผ่าน?</span>
-    </div>
-
-    <button onclick="doLogin()" class="btn-primary ripple-container w-full py-3 rounded-2xl text-white font-semibold text-base" style="border:none;">
+    <button onclick="doLogin(event)" class="btn-primary ripple-container w-full py-3 rounded-2xl text-white font-semibold text-base">
       เข้าสู่ระบบ
     </button>
 
-    <div class="text-center mt-6" style="font-size:0.8rem;color:#475569;">
-      ระบบรักษาความปลอดภัยด้วย 256-bit SSL
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;color:#64748b;">
-        <i data-lucide="shield-check" style="width:14px;height:14px;color:#4ade80;"></i> Secure Connection
-      </div>
-    </div>
+    <p style="text-align:center;font-size:.72rem;color:#475569;margin-top:16px;">
+      ⚡ หากยังไม่มี URL — กด "<strong style="color:#818cf8;">ใช้ Demo Mode</strong>" ด้านล่าง
+    </p>
+    <button onclick="demoMode()" style="width:100%;margin-top:8px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:12px;padding:10px;color:#818cf8;font-family:'Prompt',sans-serif;cursor:pointer;font-size:.85rem;">
+      ทดลองใช้ Demo Mode (ไม่ต้องใช้ Sheets)
+    </button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     APP SHELL
-══════════════════════════════════════ -->
+<!-- ════════════════════════════
+  APP SHELL
+════════════════════════════ -->
 <div id="appShell" style="display:none;">
 
-  <!-- Sidebar Overlay (mobile) -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
   <!-- ── SIDEBAR ── -->
   <nav class="sidebar" id="sidebar">
-    <!-- Logo -->
     <div style="padding:20px 20px 16px;" class="flex items-center gap-3">
-      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(99,102,241,0.4);flex-shrink:0;">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(99,102,241,.4);flex-shrink:0;">
         <i data-lucide="shopping-bag" style="width:20px;height:20px;color:white;"></i>
       </div>
-      <div>
-        <div class="font-bold text-base glow-text">ShopAccount</div>
-        <div style="font-size:0.65rem;color:#475569;">Pro Edition</div>
-      </div>
+      <div><div class="font-bold text-base glow-text">ShopAccount</div><div style="font-size:.65rem;color:#475569;">Pro Edition</div></div>
+    </div>
+
+    <!-- Connection Status -->
+    <div id="connStatus" style="margin:0 12px 12px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px;">
+      <div class="conn-dot loading" id="connDot"></div>
+      <span id="connText" style="font-size:.72rem;color:#64748b;">กำลังเชื่อมต่อ...</span>
     </div>
 
     <div class="divider mx-4 mb-3"></div>
 
-    <!-- User Info -->
-    <div style="margin:0 12px 16px;padding:12px;border-radius:14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);">
+    <!-- User -->
+    <div style="margin:0 12px 16px;padding:12px;border-radius:14px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);">
       <div class="flex items-center gap-3">
-        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.875rem;flex-shrink:0;">อด</div>
-        <div style="min-width:0;">
-          <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">อดิศักดิ์ สุขใจ</div>
-          <div style="font-size:0.7rem;color:#64748b;">ผู้ดูแลระบบ</div>
-        </div>
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem;flex-shrink:0;">อด</div>
+        <div><div style="font-size:.85rem;font-weight:600;color:#e2e8f0;">อดิศักดิ์ สุขใจ</div><div style="font-size:.7rem;color:#64748b;">ผู้ดูแลระบบ</div></div>
       </div>
     </div>
 
-    <!-- Nav Items -->
     <div style="padding:0 12px;display:flex;flex-direction:column;gap:4px;">
-      <div class="nav-item active" onclick="navigateTo('dashboard',this)">
-        <i data-lucide="layout-dashboard" style="width:18px;height:18px;flex-shrink:0;"></i> แดชบอร์ด
-      </div>
-      <div class="nav-item" onclick="navigateTo('orders',this)">
-        <i data-lucide="shopping-cart" style="width:18px;height:18px;flex-shrink:0;"></i> คำสั่งซื้อ
-        <span class="ml-auto badge badge-indigo" style="font-size:0.65rem;padding:1px 8px;">12</span>
-      </div>
-      <div class="nav-item" onclick="navigateTo('expenses',this)">
-        <i data-lucide="credit-card" style="width:18px;height:18px;flex-shrink:0;"></i> รายจ่าย
-      </div>
-      <div class="nav-item" onclick="navigateTo('products',this)">
-        <i data-lucide="package" style="width:18px;height:18px;flex-shrink:0;"></i> สินค้า
-      </div>
-      <div class="nav-item" onclick="navigateTo('reports',this)">
-        <i data-lucide="bar-chart-2" style="width:18px;height:18px;flex-shrink:0;"></i> รายงาน
-      </div>
-
+      <div class="nav-item active" onclick="navigateTo('dashboard',this)"><i data-lucide="layout-dashboard" style="width:18px;height:18px;flex-shrink:0;"></i>แดชบอร์ด</div>
+      <div class="nav-item" onclick="navigateTo('orders',this)"><i data-lucide="shopping-cart" style="width:18px;height:18px;flex-shrink:0;"></i>คำสั่งซื้อ<span class="ml-auto badge badge-indigo" style="font-size:.65rem;padding:1px 8px;" id="orderCountBadge">0</span></div>
+      <div class="nav-item" onclick="navigateTo('expenses',this)"><i data-lucide="credit-card" style="width:18px;height:18px;flex-shrink:0;"></i>รายจ่าย</div>
+      <div class="nav-item" onclick="navigateTo('products',this)"><i data-lucide="package" style="width:18px;height:18px;flex-shrink:0;"></i>สินค้า</div>
+      <div class="nav-item" onclick="navigateTo('reports',this)"><i data-lucide="bar-chart-2" style="width:18px;height:18px;flex-shrink:0;"></i>รายงาน</div>
       <div class="divider my-2"></div>
-
-      <div class="nav-item" onclick="navigateTo('settings',this)">
-        <i data-lucide="settings" style="width:18px;height:18px;flex-shrink:0;"></i> ตั้งค่า
-      </div>
-      <div class="nav-item" onclick="doLogout()">
-        <i data-lucide="log-out" style="width:18px;height:18px;flex-shrink:0;color:#f87171;"></i>
-        <span style="color:#f87171;">ออกจากระบบ</span>
-      </div>
+      <div class="nav-item" onclick="navigateTo('settings',this)"><i data-lucide="settings" style="width:18px;height:18px;flex-shrink:0;"></i>ตั้งค่า</div>
+      <div class="nav-item" onclick="doLogout()"><i data-lucide="log-out" style="width:18px;height:18px;flex-shrink:0;color:#f87171;"></i><span style="color:#f87171;">ออกจากระบบ</span></div>
     </div>
-
-    <!-- Version -->
-    <div style="position:absolute;bottom:16px;left:20px;right:20px;font-size:0.65rem;color:#334155;text-align:center;">
-      ShopAccount Pro v2.5.0 · © 2568 All rights reserved
-    </div>
+    <div style="position:absolute;bottom:16px;left:20px;right:20px;font-size:.65rem;color:#334155;text-align:center;">ShopAccount Pro v3.0 · Google Sheets Edition</div>
   </nav>
 
   <!-- ── NAVBAR ── -->
   <header class="navbar" id="navbar" style="left:260px;right:0;">
     <div class="flex items-center h-full px-4 gap-3">
-      <button id="sidebarToggle" onclick="toggleSidebar()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;cursor:pointer;transition:all 0.2s;">
+      <button onclick="toggleSidebar()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;cursor:pointer;transition:all .2s;">
         <i data-lucide="menu" style="width:18px;height:18px;color:#94a3b8;"></i>
       </button>
-
-      <!-- Page Title -->
       <div style="flex:1;min-width:0;">
-        <h2 id="pageTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">แดชบอร์ด</h2>
-        <p style="font-size:0.7rem;color:#475569;" id="pageSubtitle">ภาพรวมธุรกิจวันนี้</p>
+        <h2 id="pageTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;">แดชบอร์ด</h2>
+        <p id="pageSubtitle" style="font-size:.7rem;color:#475569;">ภาพรวมธุรกิจวันนี้</p>
       </div>
-
       <div class="flex items-center gap-2">
-        <!-- Dark Mode Toggle -->
-        <button onclick="showToast('ปัจจุบันใช้ Dark Mode อยู่แล้ว','info')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;cursor:pointer;">
-          <i data-lucide="moon" style="width:18px;height:18px;color:#818cf8;"></i>
+        <!-- Refresh -->
+        <button onclick="refreshCurrentPage()" id="refreshBtn" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;cursor:pointer;" title="รีเฟรชข้อมูล">
+          <i data-lucide="refresh-cw" style="width:18px;height:18px;color:#64748b;" id="refreshIcon"></i>
         </button>
-
-        <!-- Notification Bell -->
-        <button onclick="showNotifPanel()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;cursor:pointer;position:relative;">
+        <button style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;cursor:pointer;position:relative;">
           <i data-lucide="bell" style="width:18px;height:18px;color:#94a3b8;"></i>
           <div class="notif-dot"></div>
         </button>
-
-        <!-- Avatar -->
-        <div onclick="showToast('โปรไฟล์ผู้ใช้งาน','info')" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;cursor:pointer;box-shadow:0 0 0 2px rgba(168,85,247,0.4);">อด</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;cursor:pointer;box-shadow:0 0 0 2px rgba(168,85,247,.4);">อด</div>
       </div>
     </div>
   </header>
@@ -497,10 +469,9 @@
   <main class="main-content" id="mainContent">
     <div style="padding:20px 16px;" id="pageContainer">
 
-      <!-- ════ DASHBOARD PAGE ════ -->
+      <!-- ══ DASHBOARD ══ -->
       <div class="page active" id="page-dashboard">
-
-        <!-- Skeleton Loading (shows briefly) -->
+        <!-- Skeleton -->
         <div id="skeletonLoader" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
           <div class="skeleton" style="height:110px;border-radius:20px;"></div>
           <div class="skeleton" style="height:110px;border-radius:20px;"></div>
@@ -508,227 +479,127 @@
           <div class="skeleton" style="height:110px;border-radius:20px;"></div>
         </div>
 
-        <!-- Real Content (hidden during skeleton) -->
         <div id="dashContent" style="display:none;">
-          <!-- Greeting -->
           <div style="margin-bottom:20px;">
-            <h2 style="font-size:1.3rem;font-weight:700;color:#e2e8f0;">สวัสดีตอนเช้า อดิศักดิ์ 👋</h2>
-            <p style="font-size:0.8rem;color:#64748b;margin-top:2px;">ข้อมูลอัปเดตล่าสุด: <span style="color:#818cf8;" id="lastUpdated"></span></p>
+            <h2 style="font-size:1.3rem;font-weight:700;color:#e2e8f0;">สวัสดี อดิศักดิ์ 👋</h2>
+            <p style="font-size:.8rem;color:#64748b;margin-top:2px;">อัปเดต: <span style="color:#818cf8;" id="lastUpdated">—</span></p>
           </div>
 
           <!-- Stat Cards -->
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
-            <!-- ยอดขาย -->
-            <div class="stat-card" style="border-top: 2px solid rgba(99,102,241,0.5);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">ยอดขายวันนี้</span>
-                <div style="background:rgba(99,102,241,0.15);border-radius:10px;padding:6px;">
-                  <i data-lucide="trending-up" style="width:16px;height:16px;color:#818cf8;"></i>
-                </div>
+            <div class="stat-card" style="border-top:2px solid rgba(99,102,241,.5);">
+              <div class="flex items-center justify-between mb-3">
+                <span style="font-size:.65rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">ยอดขายวันนี้</span>
+                <div style="background:rgba(99,102,241,.15);border-radius:10px;padding:5px;"><i data-lucide="trending-up" style="width:15px;height:15px;color:#818cf8;"></i></div>
               </div>
-              <div class="counter text-white font-bold" style="font-size:1.4rem;" data-target="84750" data-prefix="฿" data-format="true">฿0</div>
-              <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                <i data-lucide="arrow-up" style="width:12px;height:12px;"></i> +12.4% จากเมื่อวาน
-              </div>
+              <div class="font-bold text-white" style="font-size:1.3rem;" id="statSales">฿0</div>
+              <div style="font-size:.65rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:3px;"><i data-lucide="arrow-up" style="width:11px;height:11px;"></i><span id="statSalesOrders">0 ออเดอร์</span></div>
             </div>
-
-            <!-- กำไร -->
-            <div class="stat-card" style="border-top: 2px solid rgba(168,85,247,0.5);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">กำไรวันนี้</span>
-                <div style="background:rgba(168,85,247,0.15);border-radius:10px;padding:6px;">
-                  <i data-lucide="wallet" style="width:16px;height:16px;color:#a855f7;"></i>
-                </div>
+            <div class="stat-card" style="border-top:2px solid rgba(168,85,247,.5);">
+              <div class="flex items-center justify-between mb-3">
+                <span style="font-size:.65rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">กำไรวันนี้</span>
+                <div style="background:rgba(168,85,247,.15);border-radius:10px;padding:5px;"><i data-lucide="wallet" style="width:15px;height:15px;color:#a855f7;"></i></div>
               </div>
-              <div class="counter text-white font-bold" style="font-size:1.4rem;" data-target="31200" data-prefix="฿" data-format="true">฿0</div>
-              <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                <i data-lucide="arrow-up" style="width:12px;height:12px;"></i> +8.1% จากเมื่อวาน
-              </div>
+              <div class="font-bold text-white" style="font-size:1.3rem;" id="statProfit">฿0</div>
+              <div style="font-size:.65rem;color:#94a3b8;margin-top:4px;">หลังหักรายจ่าย</div>
             </div>
-
-            <!-- รายจ่าย -->
-            <div class="stat-card" style="border-top: 2px solid rgba(244,114,182,0.5);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">รายจ่าย</span>
-                <div style="background:rgba(244,114,182,0.15);border-radius:10px;padding:6px;">
-                  <i data-lucide="receipt" style="width:16px;height:16px;color:#f472b6;"></i>
-                </div>
+            <div class="stat-card" style="border-top:2px solid rgba(244,114,182,.5);">
+              <div class="flex items-center justify-between mb-3">
+                <span style="font-size:.65rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">รายจ่ายวันนี้</span>
+                <div style="background:rgba(244,114,182,.15);border-radius:10px;padding:5px;"><i data-lucide="receipt" style="width:15px;height:15px;color:#f472b6;"></i></div>
               </div>
-              <div class="counter text-white font-bold" style="font-size:1.4rem;" data-target="53550" data-prefix="฿" data-format="true">฿0</div>
-              <div style="font-size:0.7rem;color:#f87171;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                <i data-lucide="arrow-up" style="width:12px;height:12px;"></i> +5.3% จากเมื่อวาน
-              </div>
+              <div class="font-bold text-white" style="font-size:1.3rem;" id="statExpense">฿0</div>
+              <div style="font-size:.65rem;color:#f87171;margin-top:4px;" id="statExpenseCount">0 รายการ</div>
             </div>
-
-            <!-- สินค้าขายดี -->
-            <div class="stat-card" style="border-top: 2px solid rgba(251,191,36,0.5);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">สินค้าขายดี</span>
-                <div style="background:rgba(251,191,36,0.15);border-radius:10px;padding:6px;">
-                  <i data-lucide="star" style="width:16px;height:16px;color:#fbbf24;"></i>
-                </div>
+            <div class="stat-card" style="border-top:2px solid rgba(251,191,36,.5);">
+              <div class="flex items-center justify-between mb-3">
+                <span style="font-size:.65rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">สินค้าขายดี</span>
+                <div style="background:rgba(251,191,36,.15);border-radius:10px;padding:5px;"><i data-lucide="star" style="width:15px;height:15px;color:#fbbf24;"></i></div>
               </div>
-              <div class="text-white font-bold" style="font-size:0.95rem;line-height:1.3;">เสื้อ Uniqlo<br><span style="font-size:0.75rem;color:#a855f7;">147 ชิ้น</span></div>
-              <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                <i data-lucide="fire" style="width:12px;height:12px;"></i> ขายเร็วมาก!
-              </div>
+              <div class="font-bold text-white" style="font-size:.95rem;line-height:1.3;" id="statTopProduct">—</div>
+              <div style="font-size:.65rem;color:#a855f7;margin-top:4px;" id="statTopSold"></div>
             </div>
           </div>
 
-          <!-- Charts Row -->
+          <!-- Charts -->
           <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;">
-            <!-- Line Chart -->
             <div class="glass" style="padding:20px;">
               <div class="flex items-center justify-between mb-4">
-                <div>
-                  <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">ยอดขาย 7 วันล่าสุด</h3>
-                  <p style="font-size:0.7rem;color:#64748b;margin-top:2px;">เปรียบเทียบกับสัปดาห์ที่แล้ว</p>
-                </div>
-                <span class="badge badge-green">Live</span>
+                <div><h3 style="font-size:.95rem;font-weight:700;color:#e2e8f0;">ยอดขาย 7 วันล่าสุด</h3><p style="font-size:.7rem;color:#64748b;margin-top:2px;">ข้อมูลจาก Google Sheets</p></div>
+                <span class="badge badge-green" id="liveIndicator">● Live</span>
               </div>
               <div class="chart-container"><canvas id="salesChart"></canvas></div>
             </div>
-
-            <!-- Bar Chart -->
             <div class="glass" style="padding:20px;">
               <div class="flex items-center justify-between mb-4">
-                <div>
-                  <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">รายจ่ายตามหมวดหมู่</h3>
-                  <p style="font-size:0.7rem;color:#64748b;margin-top:2px;">เดือนเมษายน 2568</p>
-                </div>
+                <div><h3 style="font-size:.95rem;font-weight:700;color:#e2e8f0;">รายจ่ายตามหมวด</h3><p style="font-size:.7rem;color:#64748b;margin-top:2px;">รวมทุกรายการ</p></div>
               </div>
               <div class="chart-container"><canvas id="expenseChart"></canvas></div>
             </div>
           </div>
 
-          <!-- Recent Orders Mini -->
+          <!-- Recent Orders -->
           <div class="glass" style="padding:20px;">
             <div class="flex items-center justify-between mb-4">
-              <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">คำสั่งซื้อล่าสุด</h3>
-              <button onclick="navigateTo('orders',null)" style="background:none;border:none;font-size:0.75rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">ดูทั้งหมด →</button>
+              <h3 style="font-size:.95rem;font-weight:700;color:#e2e8f0;">คำสั่งซื้อล่าสุด</h3>
+              <button onclick="navigateTo('orders',null)" style="background:none;border:none;font-size:.75rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">ดูทั้งหมด →</button>
             </div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);">
-                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(168,85,247,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <i data-lucide="package" style="width:16px;height:16px;color:#818cf8;"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">สมชาย ใจดี</div>
-                  <div style="font-size:0.7rem;color:#64748b;">เสื้อ Uniqlo × 2</div>
-                </div>
-                <div style="text-align:right;flex-shrink:0;">
-                  <div style="font-size:0.85rem;font-weight:700;color:#4ade80;">฿890</div>
-                  <span class="badge badge-green" style="font-size:0.6rem;">ชำระแล้ว</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);">
-                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(244,114,182,0.3),rgba(168,85,247,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <i data-lucide="package" style="width:16px;height:16px;color:#f472b6;"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;">มานี มีนา</div>
-                  <div style="font-size:0.7rem;color:#64748b;">กระเป๋า Coach × 1</div>
-                </div>
-                <div style="text-align:right;flex-shrink:0;">
-                  <div style="font-size:0.85rem;font-weight:700;color:#fbbf24;">฿4,500</div>
-                  <span class="badge badge-yellow" style="font-size:0.6rem;">รอชำระ</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);">
-                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(34,197,94,0.3),rgba(99,102,241,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <i data-lucide="package" style="width:16px;height:16px;color:#4ade80;"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;">วันดี ศรีสุข</div>
-                  <div style="font-size:0.7rem;color:#64748b;">รองเท้า Nike × 1</div>
-                </div>
-                <div style="text-align:right;flex-shrink:0;">
-                  <div style="font-size:0.85rem;font-weight:700;color:#4ade80;">฿3,200</div>
-                  <span class="badge badge-green" style="font-size:0.6rem;">ชำระแล้ว</span>
-                </div>
-              </div>
+            <div id="recentOrdersList" style="display:flex;flex-direction:column;gap:10px;">
+              <div class="skeleton" style="height:54px;"></div>
+              <div class="skeleton" style="height:54px;"></div>
+              <div class="skeleton" style="height:54px;"></div>
             </div>
           </div>
-        </div><!-- end dashContent -->
-      </div><!-- end page-dashboard -->
+        </div>
+      </div>
 
-      <!-- ════ ORDERS PAGE ════ -->
+      <!-- ══ ORDERS ══ -->
       <div class="page" id="page-orders">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <div>
-            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">คำสั่งซื้อทั้งหมด</h2>
-            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">พบ 12 รายการ</p>
-          </div>
+        <div class="flex items-center justify-between mb-5" style="flex-wrap:wrap;gap:12px;">
+          <div><h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">คำสั่งซื้อ</h2><p style="font-size:.75rem;color:#64748b;" id="ordersCount">กำลังโหลด...</p></div>
           <button onclick="openModal('order')" class="btn-primary ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold">
-            <i data-lucide="plus" style="width:16px;height:16px;"></i> เพิ่มคำสั่งซื้อ
+            <i data-lucide="plus" style="width:16px;height:16px;"></i>เพิ่มออเดอร์
           </button>
         </div>
-
-        <!-- Search + Filter -->
         <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:180px;position:relative;">
+          <div style="flex:1;min-width:160px;position:relative;">
             <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#64748b;"></i>
-            <input type="text" class="input-glass" placeholder="ค้นหาคำสั่งซื้อ..." style="padding-left:38px;" oninput="filterOrders(this.value)">
+            <input type="text" class="input-glass" placeholder="ค้นหา..." style="padding-left:38px;" oninput="filterOrdersLocal(this.value)">
           </div>
-          <select class="input-glass" style="width:auto;min-width:130px;" onchange="filterByStatus(this.value)">
+          <select class="input-glass" style="width:auto;min-width:130px;" onchange="filterOrdersStatus(this.value)">
             <option value="">ทุกสถานะ</option>
             <option value="paid">ชำระแล้ว</option>
             <option value="unpaid">รอชำระ</option>
             <option value="shipping">จัดส่ง</option>
           </select>
         </div>
-
-        <!-- Table -->
         <div class="glass" style="padding:16px;">
           <div class="table-scroll">
-            <table class="data-table" id="ordersTable">
-              <thead>
-                <tr>
-                  <th>เลขที่</th>
-                  <th>ลูกค้า</th>
-                  <th>สินค้า</th>
-                  <th>ยอด</th>
-                  <th>สถานะ</th>
-                  <th>วันที่</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="ordersBody"></tbody>
+            <table class="data-table">
+              <thead><tr><th>เลขที่</th><th>ลูกค้า</th><th>สินค้า</th><th>ยอด</th><th>สถานะ</th><th>วันที่</th><th></th></tr></thead>
+              <tbody id="ordersBody"><tr><td colspan="7" style="text-align:center;padding:30px;color:#475569;"><div class="skeleton" style="height:40px;margin-bottom:8px;"></div><div class="skeleton" style="height:40px;margin-bottom:8px;"></div><div class="skeleton" style="height:40px;"></div></td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ════ EXPENSES PAGE ════ -->
+      <!-- ══ EXPENSES ══ -->
       <div class="page" id="page-expenses">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <div>
-            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">รายจ่าย</h2>
-            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">เดือนเมษายน 2568</p>
-          </div>
+        <div class="flex items-center justify-between mb-5" style="flex-wrap:wrap;gap:12px;">
+          <div><h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">รายจ่าย</h2><p style="font-size:.75rem;color:#64748b;" id="expensesCount">กำลังโหลด...</p></div>
           <button onclick="openModal('expense')" class="btn-primary ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold">
-            <i data-lucide="plus" style="width:16px;height:16px;"></i> บันทึกรายจ่าย
+            <i data-lucide="plus" style="width:16px;height:16px;"></i>บันทึกรายจ่าย
           </button>
         </div>
-
         <!-- Summary -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
-          <div class="glass" style="padding:14px;text-align:center;">
-            <div style="font-size:0.65rem;color:#64748b;margin-bottom:4px;">รวมรายจ่าย</div>
-            <div style="font-size:1rem;font-weight:800;color:#f87171;">฿53,550</div>
-          </div>
-          <div class="glass" style="padding:14px;text-align:center;">
-            <div style="font-size:0.65rem;color:#64748b;margin-bottom:4px;">รายการ</div>
-            <div style="font-size:1rem;font-weight:800;color:#818cf8;">8</div>
-          </div>
-          <div class="glass" style="padding:14px;text-align:center;">
-            <div style="font-size:0.65rem;color:#64748b;margin-bottom:4px;">เฉลี่ย/วัน</div>
-            <div style="font-size:1rem;font-weight:800;color:#fbbf24;">฿1,785</div>
-          </div>
+          <div class="glass" style="padding:14px;text-align:center;"><div style="font-size:.65rem;color:#64748b;margin-bottom:4px;">รวมรายจ่าย</div><div style="font-size:1rem;font-weight:800;color:#f87171;" id="expTotal">฿0</div></div>
+          <div class="glass" style="padding:14px;text-align:center;"><div style="font-size:.65rem;color:#64748b;margin-bottom:4px;">จำนวน</div><div style="font-size:1rem;font-weight:800;color:#818cf8;" id="expCount">0</div></div>
+          <div class="glass" style="padding:14px;text-align:center;"><div style="font-size:.65rem;color:#64748b;margin-bottom:4px;">เฉลี่ย/รายการ</div><div style="font-size:1rem;font-weight:800;color:#fbbf24;" id="expAvg">฿0</div></div>
         </div>
-
-        <!-- Mobile Cards / Desktop Table -->
+        <!-- Mobile Cards -->
         <div id="expenseMobileCards" class="mobile-only" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <!-- Desktop Table -->
         <div id="expenseDesktopTable" class="desktop-only glass" style="padding:16px;">
           <div class="table-scroll">
             <table class="data-table">
@@ -739,179 +610,133 @@
         </div>
       </div>
 
-      <!-- ════ PRODUCTS PAGE ════ -->
+      <!-- ══ PRODUCTS ══ -->
       <div class="page" id="page-products">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <div>
-            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">สินค้าทั้งหมด</h2>
-            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">8 รายการ</p>
-          </div>
+        <div class="flex items-center justify-between mb-5" style="flex-wrap:wrap;gap:12px;">
+          <div><h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">สินค้า</h2><p style="font-size:.75rem;color:#64748b;" id="productsCount">กำลังโหลด...</p></div>
           <button onclick="openModal('product')" class="btn-primary ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold">
-            <i data-lucide="plus" style="width:16px;height:16px;"></i> เพิ่มสินค้า
+            <i data-lucide="plus" style="width:16px;height:16px;"></i>เพิ่มสินค้า
           </button>
         </div>
-
-        <!-- Search -->
         <div style="position:relative;margin-bottom:16px;">
           <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#64748b;"></i>
-          <input type="text" class="input-glass" placeholder="ค้นหาสินค้า..." style="padding-left:38px;">
+          <input type="text" class="input-glass" placeholder="ค้นหาสินค้า..." style="padding-left:38px;" oninput="filterProductsLocal(this.value)">
         </div>
-
-        <!-- Product Grid -->
         <div id="productGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;"></div>
       </div>
 
-      <!-- ════ REPORTS PAGE ════ -->
+      <!-- ══ REPORTS ══ -->
       <div class="page" id="page-reports">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <div>
-            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">รายงานสรุป</h2>
-            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">เมษายน 2568</p>
-          </div>
+        <div class="flex items-center justify-between mb-5" style="flex-wrap:wrap;gap:12px;">
+          <div><h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">รายงาน</h2><p style="font-size:.75rem;color:#64748b;">สรุปจาก Google Sheets</p></div>
           <div style="display:flex;gap:8px;">
-            <button onclick="showToast('กำลังสร้าง PDF...','info')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;cursor:pointer;">
-              <i data-lucide="file-text" style="width:15px;height:15px;"></i> PDF
+            <button onclick="showToast('Export PDF (เพิ่มใน Backend ได้)','info')" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:8px 12px;color:#f87171;cursor:pointer;font-family:'Prompt',sans-serif;font-size:.8rem;display:flex;align-items:center;gap:6px;">
+              <i data-lucide="file-text" style="width:14px;height:14px;"></i>PDF
             </button>
-            <button onclick="showToast('กำลังสร้าง Excel...','info')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;cursor:pointer;">
-              <i data-lucide="table" style="width:15px;height:15px;"></i> Excel
+            <button onclick="exportToCSV()" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:8px 12px;color:#4ade80;cursor:pointer;font-family:'Prompt',sans-serif;font-size:.8rem;display:flex;align-items:center;gap:6px;">
+              <i data-lucide="table" style="width:14px;height:14px;"></i>CSV
             </button>
           </div>
         </div>
-
-        <!-- Summary Cards -->
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;">
-          <div class="glass" style="padding:16px;">
-            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">รายรับรวม</div>
-            <div style="font-size:1.2rem;font-weight:800;color:#4ade80;">฿ 1,247,850</div>
-            <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;">↑ 18.3% จากเดือนก่อน</div>
-          </div>
-          <div class="glass" style="padding:16px;">
-            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">รายจ่ายรวม</div>
-            <div style="font-size:1.2rem;font-weight:800;color:#f87171;">฿ 892,400</div>
-            <div style="font-size:0.7rem;color:#f87171;margin-top:4px;">↑ 7.2% จากเดือนก่อน</div>
-          </div>
-          <div class="glass" style="padding:16px;">
-            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">กำไรสุทธิ</div>
-            <div style="font-size:1.2rem;font-weight:800;color:#818cf8;">฿ 355,450</div>
-            <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;">↑ 42.1% จากเดือนก่อน</div>
-          </div>
-          <div class="glass" style="padding:16px;">
-            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">คำสั่งซื้อ</div>
-            <div style="font-size:1.2rem;font-weight:800;color:#fbbf24;">247 รายการ</div>
-            <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;">↑ 15 รายการ</div>
-          </div>
+          <div class="glass" style="padding:16px;"><div style="font-size:.7rem;color:#64748b;margin-bottom:6px;">รายรับรวม</div><div style="font-size:1.1rem;font-weight:800;color:#4ade80;" id="repIncome">฿0</div></div>
+          <div class="glass" style="padding:16px;"><div style="font-size:.7rem;color:#64748b;margin-bottom:6px;">รายจ่ายรวม</div><div style="font-size:1.1rem;font-weight:800;color:#f87171;" id="repExpense">฿0</div></div>
+          <div class="glass" style="padding:16px;"><div style="font-size:.7rem;color:#64748b;margin-bottom:6px;">กำไรสุทธิ</div><div style="font-size:1.1rem;font-weight:800;color:#818cf8;" id="repProfit">฿0</div></div>
+          <div class="glass" style="padding:16px;"><div style="font-size:.7rem;color:#64748b;margin-bottom:6px;">คำสั่งซื้อรวม</div><div style="font-size:1.1rem;font-weight:800;color:#fbbf24;" id="repOrders">0</div></div>
         </div>
-
-        <!-- Full Chart -->
         <div class="glass" style="padding:20px;margin-bottom:16px;">
-          <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ยอดขายรายเดือน (2568)</h3>
-          <div style="height:260px;"><canvas id="monthlyChart"></canvas></div>
+          <h3 style="font-size:.95rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ยอดขาย 7 วัน (จาก Google Sheets)</h3>
+          <div style="height:240px;"><canvas id="reportSalesChart"></canvas></div>
         </div>
         <div class="glass" style="padding:20px;">
-          <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">กำไร vs รายจ่าย</h3>
-          <div style="height:220px;"><canvas id="profitChart"></canvas></div>
+          <h3 style="font-size:.95rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">รายจ่ายตามหมวด</h3>
+          <div style="height:220px;"><canvas id="reportExpenseChart"></canvas></div>
         </div>
       </div>
 
-      <!-- ════ SETTINGS PAGE ════ -->
+      <!-- ══ SETTINGS ══ -->
       <div class="page" id="page-settings">
         <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;margin-bottom:20px;">ตั้งค่าระบบ</h2>
-
         <div style="display:flex;flex-direction:column;gap:12px;">
+          <!-- Google Sheets Config -->
           <div class="glass" style="padding:20px;">
-            <h3 style="font-size:0.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ข้อมูลร้านค้า</h3>
+            <h3 style="font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+              <i data-lucide="database" style="width:16px;height:16px;color:#4ade80;"></i>
+              การเชื่อมต่อ Google Sheets
+            </h3>
+            <p style="font-size:.72rem;color:#64748b;margin-bottom:16px;">Apps Script Web App URL</p>
             <div style="display:flex;flex-direction:column;gap:12px;">
-              <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อร้านค้า</label>
-                <input type="text" class="input-glass" value="ShopAccount Store"></div>
-              <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">อีเมล</label>
-                <input type="email" class="input-glass" value="admin@shopaccount.th"></div>
-              <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">เบอร์โทร</label>
-                <input type="tel" class="input-glass" value="062-xxx-xxxx"></div>
-              <button onclick="showToast('บันทึกข้อมูลเรียบร้อย!','success')" class="btn-primary ripple-container py-2.5 rounded-xl text-white font-semibold text-sm" style="width:100%;">บันทึกการเปลี่ยนแปลง</button>
+              <div>
+                <label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">Web App URL</label>
+                <input type="url" class="input-glass" id="settingsUrl" placeholder="https://script.google.com/macros/s/..." style="font-size:.8rem;">
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="testConnection()" style="flex:1;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:12px;padding:10px;color:#4ade80;cursor:pointer;font-family:'Prompt',sans-serif;font-size:.85rem;">
+                  🔌 ทดสอบการเชื่อมต่อ
+                </button>
+                <button onclick="saveUrl()" class="btn-primary ripple-container py-2.5 rounded-xl text-white font-semibold text-sm" style="flex:1;">
+                  บันทึก URL
+                </button>
+              </div>
+              <div id="connResult" style="display:none;padding:12px;border-radius:10px;font-size:.8rem;"></div>
             </div>
           </div>
 
+          <!-- Shop Info -->
           <div class="glass" style="padding:20px;">
-            <h3 style="font-size:0.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">การแจ้งเตือน</h3>
-            <div style="display:flex;flex-direction:column;gap:14px;">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div style="font-size:0.85rem;color:#e2e8f0;">แจ้งเตือนคำสั่งซื้อใหม่</div>
-                  <div style="font-size:0.7rem;color:#64748b;">รับการแจ้งเตือนเมื่อมีออเดอร์ใหม่</div>
-                </div>
-                <label style="position:relative;display:inline-block;width:48px;height:26px;">
-                  <input type="checkbox" checked style="opacity:0;width:0;height:0;" onchange="toggleSwitch(this)">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="divider"></div>
-              <div class="flex items-center justify-between">
-                <div>
-                  <div style="font-size:0.85rem;color:#e2e8f0;">แจ้งเตือนสต็อกต่ำ</div>
-                  <div style="font-size:0.7rem;color:#64748b;">เมื่อสินค้าเหลือน้อยกว่า 10 ชิ้น</div>
-                </div>
-                <label style="position:relative;display:inline-block;width:48px;height:26px;">
-                  <input type="checkbox" checked style="opacity:0;width:0;height:0;" onchange="toggleSwitch(this)">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
+            <h3 style="font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ข้อมูลร้านค้า</h3>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อร้านค้า</label><input type="text" class="input-glass" value="ShopAccount Store"></div>
+              <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">อีเมล</label><input type="email" class="input-glass" value="admin@shopaccount.th"></div>
+              <button onclick="showToast('บันทึกข้อมูลเรียบร้อย!','success')" class="btn-primary ripple-container py-2.5 rounded-xl text-white font-semibold text-sm">บันทึก</button>
             </div>
           </div>
 
+          <!-- Mode -->
           <div class="glass" style="padding:20px;">
-            <h3 style="font-size:0.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ความปลอดภัย</h3>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <button onclick="showToast('ระบบส่งลิงก์เปลี่ยนรหัสผ่านไปยังอีเมลแล้ว','info')" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:12px 16px;text-align:left;cursor:pointer;font-family:'Prompt',sans-serif;color:#818cf8;font-size:0.85rem;display:flex;align-items:center;gap:10px;">
-                <i data-lucide="key" style="width:16px;height:16px;"></i> เปลี่ยนรหัสผ่าน
-              </button>
-              <button onclick="showConfirm('ออกจากระบบทุกอุปกรณ์?','คุณต้องการออกจากระบบทั้งหมดใช่ไหม?',doLogout)" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:12px 16px;text-align:left;cursor:pointer;font-family:'Prompt',sans-serif;color:#f87171;font-size:0.85rem;display:flex;align-items:center;gap:10px;">
-                <i data-lucide="log-out" style="width:16px;height:16px;"></i> ออกจากระบบทุกอุปกรณ์
-              </button>
+            <h3 style="font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:12px;">โหมดการใช้งาน</h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;background:rgba(255,255,255,.03);">
+              <div>
+                <div style="font-size:.85rem;color:#e2e8f0;">โหมด Demo</div>
+                <div style="font-size:.7rem;color:#64748b;" id="modeLabel">ใช้ข้อมูลตัวอย่าง (ไม่บันทึกจริง)</div>
+              </div>
+              <span class="badge" id="modeBadge" style="background:rgba(251,191,36,.15);color:#facc15;border:1px solid rgba(251,191,36,.3);">Demo</span>
             </div>
           </div>
         </div>
       </div>
 
-    </div><!-- end pageContainer -->
-  </main><!-- end mainContent -->
+    </div>
+  </main>
 
-  <!-- ── BOTTOM NAVIGATION (Mobile) ── -->
+  <!-- ── BOTTOM NAV ── -->
   <nav class="bottom-nav" id="bottomNav">
     <div class="bottom-nav-item active" id="bnav-dashboard" onclick="navigateTo('dashboard',null);setBottomNav('dashboard')">
-      <i data-lucide="layout-dashboard" style="width:20px;height:20px;"></i>
-      <span>หน้าหลัก</span>
+      <i data-lucide="layout-dashboard" style="width:20px;height:20px;"></i><span>หน้าหลัก</span>
     </div>
     <div class="bottom-nav-item" id="bnav-orders" onclick="navigateTo('orders',null);setBottomNav('orders')">
-      <i data-lucide="shopping-cart" style="width:20px;height:20px;"></i>
-      <span>ออเดอร์</span>
+      <i data-lucide="shopping-cart" style="width:20px;height:20px;"></i><span>ออเดอร์</span>
     </div>
-    <!-- FAB -->
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <div class="fab" onclick="openFabModal()">
-        <i data-lucide="plus" style="width:24px;height:24px;color:white;"></i>
-      </div>
-      <span style="font-size:0.6rem;color:#475569;">เพิ่ม</span>
+      <div class="fab" onclick="openFAB()"><i data-lucide="plus" style="width:24px;height:24px;color:white;"></i></div>
+      <span style="font-size:.6rem;color:#475569;">เพิ่ม</span>
     </div>
     <div class="bottom-nav-item" id="bnav-products" onclick="navigateTo('products',null);setBottomNav('products')">
-      <i data-lucide="package" style="width:20px;height:20px;"></i>
-      <span>สินค้า</span>
+      <i data-lucide="package" style="width:20px;height:20px;"></i><span>สินค้า</span>
     </div>
     <div class="bottom-nav-item" id="bnav-reports" onclick="navigateTo('reports',null);setBottomNav('reports')">
-      <i data-lucide="bar-chart-2" style="width:20px;height:20px;"></i>
-      <span>รายงาน</span>
+      <i data-lucide="bar-chart-2" style="width:20px;height:20px;"></i><span>รายงาน</span>
     </div>
   </nav>
 
 </div><!-- end appShell -->
 
-<!-- ══════════════════════════════════════
-     MODAL — Add Order / Expense / Product
-══════════════════════════════════════ -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBackdrop(event)">
+<!-- ════ MODAL ════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalBackdrop(event)">
   <div class="modal-box" id="modalBox">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div class="flex items-center justify-between mb-5">
       <h3 id="modalTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;"></h3>
-      <button onclick="closeModal()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:6px;cursor:pointer;">
+      <button onclick="closeModal()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px;cursor:pointer;">
         <i data-lucide="x" style="width:16px;height:16px;color:#94a3b8;"></i>
       </button>
     </div>
@@ -919,213 +744,801 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     CONFIRM DIALOG
-══════════════════════════════════════ -->
+<!-- ════ CONFIRM ════ -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
-    <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
       <i data-lucide="alert-triangle" style="width:26px;height:26px;color:#f87171;"></i>
     </div>
     <h3 id="confirmTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;margin-bottom:8px;"></h3>
-    <p id="confirmMsg" style="font-size:0.8rem;color:#64748b;margin-bottom:24px;line-height:1.5;"></p>
+    <p id="confirmMsg" style="font-size:.8rem;color:#64748b;margin-bottom:24px;line-height:1.5;"></p>
     <div style="display:flex;gap:10px;">
-      <button onclick="closeConfirm()" style="flex:1;padding:10px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;cursor:pointer;font-family:'Prompt',sans-serif;font-size:0.85rem;">ยกเลิก</button>
-      <button id="confirmOkBtn" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;color:white;cursor:pointer;font-family:'Prompt',sans-serif;font-size:0.85rem;font-weight:600;">ยืนยัน</button>
+      <button onclick="closeConfirm()" style="flex:1;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#94a3b8;cursor:pointer;font-family:'Prompt',sans-serif;font-size:.85rem;">ยกเลิก</button>
+      <button id="confirmOkBtn" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;color:white;cursor:pointer;font-family:'Prompt',sans-serif;font-size:.85rem;font-weight:600;">ยืนยัน</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     TOAST CONTAINER
-══════════════════════════════════════ -->
+<!-- ════ LOADING OVERLAY ════ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spin"></div>
+  <p id="loadingText" style="color:#64748b;font-size:.875rem;">กำลังโหลดข้อมูล...</p>
+</div>
+
+<!-- ════ TOAST ════ -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- Toggle Switch Style -->
-<style>
-.toggle-slider {
-  position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
-  background:rgba(255,255,255,0.1); border-radius:26px; border:1px solid rgba(255,255,255,0.1);
-  transition:0.3s;
-}
-.toggle-slider::before {
-  content:''; position:absolute; height:20px; width:20px; left:2px; bottom:2px;
-  background:white; border-radius:50%; transition:0.3s;
-}
-input:checked + .toggle-slider { background:linear-gradient(135deg,#6366f1,#a855f7); border-color:rgba(99,102,241,0.5); }
-input:checked + .toggle-slider::before { transform:translateX(22px); }
-</style>
-
-<!-- ══════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════ -->
+<!-- ════════════════════════════════════════
+  JAVASCRIPT — API LAYER + UI LOGIC
+════════════════════════════════════════ -->
 <script>
-// ── DATA ──────────────────────────────────────────────
-const ordersData = [
-  { id:'#ORD-001', customer:'สมชาย ใจดี',    product:'เสื้อ Uniqlo × 2',   amount:890,   status:'paid',     date:'05/04/68' },
-  { id:'#ORD-002', customer:'มานี มีนา',     product:'กระเป๋า Coach × 1',  amount:4500,  status:'unpaid',   date:'05/04/68' },
-  { id:'#ORD-003', customer:'วันดี ศรีสุข',  product:'รองเท้า Nike × 1',   amount:3200,  status:'paid',     date:'04/04/68' },
-  { id:'#ORD-004', customer:'ประยุทธ์ สุข',  product:'กางเกง Levi\'s × 3', amount:2100,  status:'shipping', date:'04/04/68' },
-  { id:'#ORD-005', customer:'รัตนา ดีใจ',    product:'เสื้อ Uniqlo × 1',   amount:445,   status:'paid',     date:'03/04/68' },
-  { id:'#ORD-006', customer:'กมล รักดี',     product:'แว่นตา Ray-Ban × 1', amount:5800,  status:'unpaid',   date:'03/04/68' },
-  { id:'#ORD-007', customer:'สุดา วิไล',     product:'กระเป๋า LV × 1',    amount:12500, status:'paid',     date:'02/04/68' },
-  { id:'#ORD-008', customer:'มนัส เก่ง',     product:'นาฬิกา Casio × 1',  amount:1890,  status:'paid',     date:'02/04/68' },
-  { id:'#ORD-009', customer:'ทวี สบาย',      product:'รองเท้า Adidas × 2', amount:4800,  status:'shipping', date:'01/04/68' },
-  { id:'#ORD-010', customer:'จิรา ดี',       product:'เสื้อ Nike × 1',     amount:1200,  status:'paid',     date:'01/04/68' },
-  { id:'#ORD-011', customer:'บุญมี มาก',     product:'กางเกง Zara × 2',   amount:3600,  status:'unpaid',   date:'31/03/68' },
-  { id:'#ORD-012', customer:'สายฝน เย็น',    product:'รองเท้า Vans × 1',  amount:1650,  status:'paid',     date:'31/03/68' },
-];
-
-const expensesData = [
-  { date:'01/04/68', name:'ค่าสินค้า Uniqlo',     category:'สินค้า',        amount:28000, note:'Lot เมษายน' },
-  { date:'02/04/68', name:'ค่าขนส่ง Kerry',        category:'โลจิสติกส์',   amount:4200,  note:'รอบที่ 1' },
-  { date:'03/04/68', name:'ค่าแพ็กเกจจิ้ง',       category:'บรรจุภัณฑ์',   amount:2800,  note:'กล่อง+เทป' },
-  { date:'04/04/68', name:'ค่า Facebook Ads',      category:'การตลาด',      amount:5500,  note:'สัปดาห์ที่ 1' },
-  { date:'04/04/68', name:'ค่าเช่าโกดัง',          category:'ค่าใช้จ่าย',   amount:8000,  note:'รายเดือน' },
-  { date:'05/04/68', name:'ค่าไฟฟ้า',              category:'ค่าสาธารณูปโภค',amount:1850, note:'มีนาคม' },
-  { date:'05/04/68', name:'ค่า TikTok Ads',        category:'การตลาด',      amount:2200,  note:'โปรโมชัน' },
-  { date:'05/04/68', name:'ค่าเงินเดือนพนักงาน',   category:'บุคลากร',      amount:15000, note:'เมษายน' },
-];
-
-const productsData = [
-  { name:'เสื้อ Uniqlo Airism',   price:445,  stock:52,  sold:147, img:'👕', cat:'เสื้อผ้า',   color:'rgba(99,102,241,0.2)' },
-  { name:'รองเท้า Nike Air Max',  price:3200, stock:8,   sold:89,  img:'👟', cat:'รองเท้า',   color:'rgba(239,68,68,0.2)'  },
-  { name:'กระเป๋า Coach Pillow',  price:4500, stock:15,  sold:63,  img:'👜', cat:'กระเป๋า',   color:'rgba(168,85,247,0.2)' },
-  { name:'แว่ตา Ray-Ban',         price:5800, stock:3,   sold:41,  img:'🕶️', cat:'แฟชั่น',    color:'rgba(244,114,182,0.2)'},
-  { name:'นาฬิกา Casio',          price:1890, stock:24,  sold:78,  img:'⌚', cat:'นาฬิกา',    color:'rgba(251,191,36,0.2)' },
-  { name:'กางเกง Levi\'s',        price:700,  stock:36,  sold:95,  img:'👖', cat:'เสื้อผ้า',   color:'rgba(34,197,94,0.2)'  },
-  { name:'รองเท้า Adidas',        price:2400, stock:4,   sold:55,  img:'👟', cat:'รองเท้า',   color:'rgba(249,115,22,0.2)' },
-  { name:'กระเป๋า LV Clone',      price:1200, stock:19,  sold:34,  img:'💼', cat:'กระเป๋า',   color:'rgba(14,165,233,0.2)' },
-];
-
-const catColors = {
-  'สินค้า':'rgba(99,102,241,0.2);color:#818cf8',
-  'โลจิสติกส์':'rgba(14,165,233,0.2);color:#38bdf8',
-  'บรรจุภัณฑ์':'rgba(168,85,247,0.2);color:#c084fc',
-  'การตลาด':'rgba(244,114,182,0.2);color:#f9a8d4',
-  'ค่าใช้จ่าย':'rgba(251,191,36,0.2);color:#fde047',
-  'ค่าสาธารณูปโภค':'rgba(34,197,94,0.2);color:#86efac',
-  'บุคลากร':'rgba(249,115,22,0.2);color:#fdba74',
-};
-
-// ── STATE ──────────────────────────────────────────────
-let sidebarOpen = true;
-let currentPage = 'dashboard';
+// ═══════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════
+let SCRIPT_URL = localStorage.getItem('shopaccount_url') || '';
+let IS_DEMO = false;
 let chartInstances = {};
+let cachedOrders = [], cachedExpenses = [], cachedProducts = [];
+let sidebarOpen = true;
 
-// ── INIT ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  lucide.createIcons();
-  setDate();
+// ═══════════════════════════════════════
+//  DEMO DATA (Fallback)
+// ═══════════════════════════════════════
+const DEMO_ORDERS = [
+  { id:'ORD-DEMO1', customer:'สมชาย ใจดี',   product:'เสื้อ Uniqlo × 2',   qty:2, price:445,  amount:890,   status:'paid',     date:'05/04/68 09:12', note:'' },
+  { id:'ORD-DEMO2', customer:'มานี มีนา',    product:'กระเป๋า Coach × 1',  qty:1, price:4500, amount:4500,  status:'unpaid',   date:'05/04/68 10:30', note:'COD' },
+  { id:'ORD-DEMO3', customer:'วันดี ศรีสุข', product:'รองเท้า Nike × 1',   qty:1, price:3200, amount:3200,  status:'paid',     date:'04/04/68 14:20', note:'' },
+  { id:'ORD-DEMO4', customer:'ประยุทธ์ สุข', product:"กางเกง Levi's × 3",  qty:3, price:700,  amount:2100,  status:'shipping', date:'04/04/68 15:00', note:'Flash' },
+  { id:'ORD-DEMO5', customer:'รัตนา ดีใจ',   product:'เสื้อ Uniqlo × 1',   qty:1, price:445,  amount:445,   status:'paid',     date:'03/04/68 11:45', note:'' },
+  { id:'ORD-DEMO6', customer:'กมล รักดี',    product:'แว่นตา Ray-Ban × 1', qty:1, price:5800, amount:5800,  status:'unpaid',   date:'03/04/68 16:10', note:'' },
+];
+const DEMO_EXPENSES = [
+  { id:'EXP-DEMO1', name:'ค่าสินค้า Uniqlo',  category:'สินค้า',        amount:28000, note:'Lot เมษายน',   date:'01/04/68 08:00' },
+  { id:'EXP-DEMO2', name:'ค่าขนส่ง Kerry',    category:'โลจิสติกส์',   amount:4200,  note:'รอบที่ 1',      date:'02/04/68 09:00' },
+  { id:'EXP-DEMO3', name:'ค่าแพ็กเกจจิ้ง',   category:'บรรจุภัณฑ์',   amount:2800,  note:'กล่อง+เทป',    date:'03/04/68 10:00' },
+  { id:'EXP-DEMO4', name:'ค่า Facebook Ads',  category:'การตลาด',      amount:5500,  note:'สัปดาห์ที่ 1', date:'04/04/68 08:30' },
+  { id:'EXP-DEMO5', name:'ค่าเช่าโกดัง',      category:'ค่าใช้จ่าย',   amount:8000,  note:'รายเดือน',     date:'05/04/68 09:00' },
+  { id:'EXP-DEMO6', name:'เงินเดือนพนักงาน',  category:'บุคลากร',      amount:15000, note:'เมษายน',       date:'05/04/68 10:00' },
+];
+const DEMO_PRODUCTS = [
+  { id:'PRD-DEMO1', name:'เสื้อ Uniqlo Airism',  category:'เสื้อผ้า', price:445,  cost:220, stock:52, sold:147, img:'👕', color:'rgba(99,102,241,0.2)'  },
+  { id:'PRD-DEMO2', name:'รองเท้า Nike Air Max',  category:'รองเท้า', price:3200, cost:1800,stock:8,  sold:89,  img:'👟', color:'rgba(239,68,68,0.2)'   },
+  { id:'PRD-DEMO3', name:'กระเป๋า Coach Pillow',  category:'กระเป๋า', price:4500, cost:2200,stock:15, sold:63,  img:'👜', color:'rgba(168,85,247,0.2)'  },
+  { id:'PRD-DEMO4', name:'แว่นตา Ray-Ban',         category:'แฟชั่น',  price:5800, cost:3200,stock:3,  sold:41,  img:'🕶️', color:'rgba(244,114,182,0.2)' },
+  { id:'PRD-DEMO5', name:'นาฬิกา Casio',           category:'นาฬิกา',  price:1890, cost:900, stock:24, sold:78,  img:'⌚', color:'rgba(251,191,36,0.2)'  },
+  { id:'PRD-DEMO6', name:"กางเกง Levi's",          category:'เสื้อผ้า', price:700,  cost:350, stock:36, sold:95,  img:'👖', color:'rgba(34,197,94,0.2)'   },
+];
 
-  // Check mobile
-  if (window.innerWidth <= 768) { sidebarOpen = false; }
+// ═══════════════════════════════════════
+//  API LAYER
+// ═══════════════════════════════════════
 
-  // Show login then app
-  setTimeout(() => {
-    // Auto-skip login for demo
-  }, 0);
-});
+// Proxy fetch เพื่อแก้ CORS (Google Apps Script ต้องการ no-redirect)
+async function apiGet(action, params = {}) {
+  if (IS_DEMO || !SCRIPT_URL) return null;
+  const url = new URL(SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString(), { redirect: 'follow' });
+  return res.json();
+}
 
-function setDate() {
-  const el = document.getElementById('lastUpdated');
-  if (el) {
-    const now = new Date();
-    el.textContent = now.toLocaleString('th-TH', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short', year:'numeric' });
+async function apiPost(action, data) {
+  if (IS_DEMO || !SCRIPT_URL) return null;
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' }, // avoid preflight
+    body: JSON.stringify({ action, data }),
+    redirect: 'follow'
+  });
+  return res.json();
+}
+
+// ── Load with Demo fallback ──────────────────────────────────
+async function loadOrders() {
+  if (IS_DEMO) { cachedOrders = [...DEMO_ORDERS]; return cachedOrders; }
+  try {
+    const r = await apiGet('getOrders');
+    if (r && r.success) { cachedOrders = r.data; return r.data; }
+    throw new Error(r?.message || 'Error');
+  } catch(e) {
+    showToast('โหลดออเดอร์ล้มเหลว: '+e.message, 'error');
+    cachedOrders = [];
+    return [];
   }
 }
 
-// ── LOGIN ──────────────────────────────────────────────
-function doLogin() {
+async function loadExpenses() {
+  if (IS_DEMO) { cachedExpenses = [...DEMO_EXPENSES]; return cachedExpenses; }
+  try {
+    const r = await apiGet('getExpenses');
+    if (r && r.success) { cachedExpenses = r.data; return r.data; }
+    throw new Error(r?.message || 'Error');
+  } catch(e) {
+    showToast('โหลดรายจ่ายล้มเหลว: '+e.message, 'error');
+    cachedExpenses = [];
+    return [];
+  }
+}
+
+async function loadProducts() {
+  if (IS_DEMO) { cachedProducts = [...DEMO_PRODUCTS]; return cachedProducts; }
+  try {
+    const r = await apiGet('getProducts');
+    if (r && r.success) { cachedProducts = r.data; return r.data; }
+    throw new Error(r?.message || 'Error');
+  } catch(e) {
+    showToast('โหลดสินค้าล้มเหลว: '+e.message, 'error');
+    cachedProducts = [];
+    return [];
+  }
+}
+
+async function loadDashboard() {
+  if (IS_DEMO) {
+    // Calculate from demo data
+    const salesToday = DEMO_ORDERS.filter(o => o.date.startsWith('05/04/68') && o.status === 'paid').reduce((s,o) => s+o.amount, 0);
+    const expToday   = DEMO_EXPENSES.filter(e => e.date.startsWith('05/04/68')).reduce((s,e) => s+e.amount, 0);
+    const expByCat   = {};
+    DEMO_EXPENSES.forEach(e => { expByCat[e.category] = (expByCat[e.category]||0) + e.amount; });
+    const salesByDay = { '29/03/68':42000,'30/03/68':58000,'31/03/68':51000,'01/04/68':67000,'02/04/68':73000,'03/04/68':62000,'05/04/68':salesToday||8635 };
+    return { success:true, salesToday, profitToday:salesToday-expToday, expenseToday:expToday,
+             ordersToday:DEMO_ORDERS.filter(o=>o.date.startsWith('05/04/68')).length,
+             topProduct:{ name:'เสื้อ Uniqlo Airism', sold:147 }, salesByDay, expByCat,
+             totalOrders:DEMO_ORDERS.length };
+  }
+  try {
+    const r = await apiGet('getDashboard');
+    if (r && r.success) return r;
+    throw new Error(r?.message || 'Error');
+  } catch(e) {
+    showToast('โหลด Dashboard ล้มเหลว: '+e.message, 'error');
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  // Pre-fill URL in login
+  if (SCRIPT_URL) document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+  if (window.innerWidth <= 768) sidebarOpen = false;
+});
+
+// ── LOGIN ──────────────────────────────
+async function doLogin(event) {
   const btn = event.currentTarget;
   addRipple(btn, event);
-  showToast('กำลังเข้าสู่ระบบ...','info');
+  const urlInput = document.getElementById('scriptUrlInput').value.trim();
+  if (urlInput) {
+    SCRIPT_URL = urlInput;
+    localStorage.setItem('shopaccount_url', urlInput);
+    IS_DEMO = false;
+  } else {
+    IS_DEMO = true;
+  }
+  showLoading('กำลังเข้าสู่ระบบ...');
   setTimeout(() => {
+    hideLoading();
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('appShell').style.display = 'block';
     lucide.createIcons();
     initApp();
-    showToast('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ','success');
-  }, 800);
+  }, 600);
 }
+
+function demoMode() {
+  IS_DEMO = true;
+  SCRIPT_URL = '';
+  showLoading('เข้าสู่ Demo Mode...');
+  setTimeout(() => {
+    hideLoading();
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    lucide.createIcons();
+    initApp();
+  }, 500);
+}
+
 function doLogout() {
   document.getElementById('appShell').style.display = 'none';
   document.getElementById('loginPage').style.display = 'flex';
+  // Reset charts
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
   lucide.createIcons();
-  showToast('ออกจากระบบเรียบร้อย','success');
+  showToast('ออกจากระบบเรียบร้อย', 'success');
   closeConfirm();
 }
 
-// ── APP INIT ──────────────────────────────────────────
-function initApp() {
-  // Skeleton → real content
-  setTimeout(() => {
-    document.getElementById('skeletonLoader').style.display = 'none';
-    document.getElementById('dashContent').style.display = 'block';
-    animateCounters();
-    initCharts();
-  }, 1200);
+// ── APP INIT ──────────────────────────────
+async function initApp() {
+  updateConnStatus('loading', 'กำลังโหลด...');
 
-  renderOrders(ordersData);
-  renderExpenses(expensesData);
-  renderProducts(productsData);
+  // Update settings page
+  if (SCRIPT_URL) document.getElementById('settingsUrl').value = SCRIPT_URL;
+  updateModeDisplay();
+
+  // Load dashboard
+  await loadDashboardPage();
+
+  if (!IS_DEMO) {
+    updateConnStatus('online', 'เชื่อมต่อแล้ว (Google Sheets)');
+  } else {
+    updateConnStatus('online', 'Demo Mode (ข้อมูลตัวอย่าง)');
+    showToast('ใช้งาน Demo Mode — ข้อมูลไม่ได้บันทึกจริง', 'info');
+  }
+
+  // Preload other pages
+  const [orders, expenses, products] = await Promise.all([ loadOrders(), loadExpenses(), loadProducts() ]);
+  renderOrders(orders);
+  renderExpenses(expenses);
+  renderProducts(products);
+  updateOrderCount(orders.length);
+  setDate();
 }
 
-// ── NAVIGATION ──────────────────────────────────────────
-const pageMeta = {
-  dashboard: { title:'แดชบอร์ด', sub:'ภาพรวมธุรกิจวันนี้' },
-  orders:    { title:'คำสั่งซื้อ', sub:'จัดการคำสั่งซื้อทั้งหมด' },
-  expenses:  { title:'รายจ่าย', sub:'บันทึกรายจ่ายประจำวัน' },
-  products:  { title:'สินค้า', sub:'จัดการคลังสินค้า' },
-  reports:   { title:'รายงาน', sub:'สรุปผลประกอบการ' },
-  settings:  { title:'ตั้งค่า', sub:'กำหนดค่าระบบ' },
-};
+// ── DASHBOARD ──────────────────────────────
+async function loadDashboardPage() {
+  document.getElementById('skeletonLoader').style.display = 'grid';
+  document.getElementById('dashContent').style.display = 'none';
 
-function navigateTo(page, navEl) {
-  // Hide all pages
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+  const data = await loadDashboard();
 
-  // Update sidebar active
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (navEl) navEl.classList.add('active');
+  document.getElementById('skeletonLoader').style.display = 'none';
+  document.getElementById('dashContent').style.display = 'block';
 
-  // Update titles
-  const meta = pageMeta[page] || {};
-  document.getElementById('pageTitle').textContent = meta.title || page;
-  document.getElementById('pageSubtitle').textContent = meta.sub || '';
+  if (!data) return;
 
-  currentPage = page;
+  // Stat Cards with counter animation
+  animateValue('statSales',   0, data.salesToday,   '฿', true);
+  animateValue('statProfit',  0, data.profitToday,  '฿', true);
+  animateValue('statExpense', 0, data.expenseToday, '฿', true);
+  document.getElementById('statSalesOrders').textContent = (data.ordersToday || 0) + ' ออเดอร์วันนี้';
+  document.getElementById('statExpenseCount').textContent = (data.totalExpenses || 0) + ' รายการทั้งหมด';
+  document.getElementById('statTopProduct').textContent = data.topProduct?.name || '—';
+  document.getElementById('statTopSold').textContent = data.topProduct?.sold ? `ขายแล้ว ${data.topProduct.sold} ชิ้น` : '';
 
-  // Close mobile sidebar
-  if (window.innerWidth <= 768) closeMobileSidebar();
+  // Charts
+  const days = Object.entries(data.salesByDay || {});
+  const labels = days.map(([k]) => {
+    const parts = k.split('/');
+    return parts[0]+'/'+parts[1];
+  });
+  const values = days.map(([,v]) => v);
+  initSalesChart(labels, values);
 
-  // Init charts if needed
-  if (page === 'reports') setTimeout(initReportCharts, 100);
+  const catLabels = Object.keys(data.expByCat || {});
+  const catValues = catLabels.map(k => data.expByCat[k]);
+  initExpenseChart(catLabels, catValues);
 
+  // Recent orders list
+  renderRecentOrders(cachedOrders.length ? cachedOrders : DEMO_ORDERS);
+
+  // Report page stats
+  const totalIncome = cachedOrders.reduce((s,o) => s + (parseFloat(o.amount)||0), 0);
+  const totalExpense = cachedExpenses.reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+  document.getElementById('repIncome').textContent  = '฿' + totalIncome.toLocaleString('th-TH');
+  document.getElementById('repExpense').textContent = '฿' + totalExpense.toLocaleString('th-TH');
+  document.getElementById('repProfit').textContent  = '฿' + (totalIncome - totalExpense).toLocaleString('th-TH');
+  document.getElementById('repOrders').textContent  = data.totalOrders || 0;
+}
+
+function renderRecentOrders(orders) {
+  const el = document.getElementById('recentOrdersList');
+  const statusColor = { paid:'#4ade80', unpaid:'#fbbf24', shipping:'#60a5fa' };
+  const statusText  = { paid:'ชำระแล้ว', unpaid:'รอชำระ', shipping:'จัดส่ง' };
+  const iconColor   = { paid:'rgba(34,197,94,.3)', unpaid:'rgba(251,191,36,.3)', shipping:'rgba(59,130,246,.3)' };
+
+  el.innerHTML = orders.slice(0,4).map(o => `
+    <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,.03);">
+      <div style="width:36px;height:36px;border-radius:10px;background:${iconColor[o.status]||'rgba(99,102,241,.2)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${statusColor[o.status]||'#818cf8'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.8rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.customer}</div>
+        <div style="font-size:.7rem;color:#64748b;">${o.product}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:.85rem;font-weight:700;color:${statusColor[o.status]||'#e2e8f0'};">฿${parseFloat(o.amount).toLocaleString('th-TH')}</div>
+        <div style="font-size:.65rem;color:${statusColor[o.status]||'#64748b'};">${statusText[o.status]||o.status}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="text-align:center;color:#475569;padding:20px;font-size:.85rem;">ยังไม่มีคำสั่งซื้อ</div>';
+}
+
+// ── ANIMATED COUNTER ──────────────────────────────
+function animateValue(id, from, to, prefix = '', format = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const target = parseFloat(to) || 0;
+  if (target < 0) {
+    el.textContent = prefix + target.toLocaleString('th-TH');
+    el.style.color = '#f87171';
+    return;
+  }
+  let start = from;
+  const duration = 1200;
+  const step = Math.max(Math.ceil(target / (duration / 16)), 1);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = format ? prefix + Math.round(start).toLocaleString('th-TH') : prefix + Math.round(start);
+    if (start >= target) clearInterval(timer);
+  }, 16);
+}
+
+// ── CHARTS ──────────────────────────────
+const chartOpts = (tooltipPrefix = '฿') => ({
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: 'rgba(15,23,42,.92)', titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+      borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, padding: 12, cornerRadius: 12,
+      callbacks: { label: ctx => ' ' + tooltipPrefix + ctx.raw.toLocaleString('th-TH') }
+    }
+  },
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#64748b', font: { family: 'Prompt', size: 10 } }, border: { display: false } },
+    y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#64748b', font: { family: 'Prompt', size: 10 }, callback: v => '฿'+(v/1000).toFixed(0)+'k' }, border: { display: false } }
+  }
+});
+
+function initSalesChart(labels, values) {
+  const ctx = document.getElementById('salesChart');
+  if (!ctx) return;
+  if (chartInstances.sales) chartInstances.sales.destroy();
+  chartInstances.sales = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label:'ยอดขาย', data: values, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.1)', fill:true, tension:.45, pointBackgroundColor:'#6366f1', pointRadius:4, pointHoverRadius:7, borderWidth:2.5 }] },
+    options: { ...chartOpts(), responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function initExpenseChart(labels, values) {
+  const ctx = document.getElementById('expenseChart');
+  if (!ctx) return;
+  if (chartInstances.expense) chartInstances.expense.destroy();
+  const colors = ['rgba(99,102,241,.7)','rgba(14,165,233,.7)','rgba(168,85,247,.7)','rgba(244,114,182,.7)','rgba(251,191,36,.7)','rgba(34,197,94,.7)','rgba(249,115,22,.7)'];
+  chartInstances.expense = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: values, backgroundColor: labels.map((_,i) => colors[i%colors.length]), borderRadius:8, borderSkipped:false }] },
+    options: { ...chartOpts(), responsive: true, maintainAspectRatio: false, plugins: { ...chartOpts().plugins, legend:{ display:false } } }
+  });
+}
+
+function initReportCharts() {
+  // Sales 7 days
+  const sCtx = document.getElementById('reportSalesChart');
+  if (sCtx && !chartInstances.rSales) {
+    const days = Object.entries(cachedOrders.reduce((acc, o) => {
+      const d = (o.date||'').substring(0,8); acc[d] = (acc[d]||0) + parseFloat(o.amount||0); return acc;
+    }, {})).slice(-7);
+    chartInstances.rSales = new Chart(sCtx, {
+      type: 'line',
+      data: { labels: days.map(([k])=>k), datasets: [{ data:days.map(([,v])=>v), borderColor:'#4ade80', backgroundColor:'rgba(74,222,128,.1)', fill:true, tension:.45, borderWidth:2.5, pointRadius:4 }] },
+      options: { ...chartOpts(), responsive:true, maintainAspectRatio:false }
+    });
+  }
+  // Expenses by cat
+  const eCtx = document.getElementById('reportExpenseChart');
+  if (eCtx && !chartInstances.rExp) {
+    const cats = cachedExpenses.reduce((acc,e) => { acc[e.category]=(acc[e.category]||0)+parseFloat(e.amount||0); return acc; }, {});
+    const colors = ['rgba(99,102,241,.7)','rgba(14,165,233,.7)','rgba(168,85,247,.7)','rgba(244,114,182,.7)','rgba(251,191,36,.7)','rgba(34,197,94,.7)','rgba(249,115,22,.7)'];
+    chartInstances.rExp = new Chart(eCtx, {
+      type: 'doughnut',
+      data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: Object.keys(cats).map((_,i)=>colors[i%colors.length]), borderWidth:0, hoverOffset:8 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins: { legend:{ display:true, position:'bottom', labels:{ color:'#64748b', font:{ family:'Prompt', size:11 }, usePointStyle:true, padding:12 } }, tooltip: { backgroundColor:'rgba(15,23,42,.92)', titleColor:'#e2e8f0', bodyColor:'#94a3b8', borderColor:'rgba(255,255,255,.1)', borderWidth:1, callbacks:{ label: ctx => ' ฿'+ctx.raw.toLocaleString('th-TH') } } } }
+    });
+  }
   lucide.createIcons();
 }
 
-// ── SIDEBAR ──────────────────────────────────────────
+// ── RENDER ORDERS ──────────────────────────────
+const statusMap = {
+  paid:     { badge:'badge-green', label:'ชำระแล้ว' },
+  unpaid:   { badge:'badge-red',   label:'รอชำระ' },
+  shipping: { badge:'badge-blue',  label:'จัดส่ง' },
+};
+
+function renderOrders(data) {
+  const tbody = document.getElementById('ordersBody');
+  if (!tbody) return;
+  document.getElementById('ordersCount').textContent = `พบ ${data.length} รายการ`;
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#475569;">ยังไม่มีข้อมูล</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(o => {
+    const s = statusMap[o.status] || { badge:'badge-indigo', label: o.status };
+    return `<tr>
+      <td style="color:#818cf8;font-weight:600;font-size:.78rem;">${o.id}</td>
+      <td style="color:#e2e8f0;font-weight:500;">${o.customer}</td>
+      <td style="color:#94a3b8;font-size:.8rem;">${o.product}</td>
+      <td style="color:#e2e8f0;font-weight:700;">฿${parseFloat(o.amount||0).toLocaleString('th-TH')}</td>
+      <td><span class="badge ${s.badge}">${s.label}</span></td>
+      <td style="color:#64748b;font-size:.72rem;">${(o.date||'').substring(0,8)}</td>
+      <td>
+        <button onclick="deleteItem('order','${o.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:4px 8px;font-size:.7rem;color:#f87171;cursor:pointer;font-family:'Prompt',sans-serif;">ลบ</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterOrdersLocal(q) {
+  const f = cachedOrders.filter(o => o.customer.includes(q) || o.id.includes(q) || (o.product||'').includes(q));
+  renderOrders(f);
+}
+function filterOrdersStatus(s) {
+  const f = s ? cachedOrders.filter(o => o.status === s) : cachedOrders;
+  renderOrders(f);
+}
+
+// ── RENDER EXPENSES ──────────────────────────────
+const catColors = {
+  'สินค้า':         'rgba(99,102,241,.2);#818cf8',
+  'โลจิสติกส์':    'rgba(14,165,233,.2);#38bdf8',
+  'บรรจุภัณฑ์':    'rgba(168,85,247,.2);#c084fc',
+  'การตลาด':       'rgba(244,114,182,.2);#f9a8d4',
+  'ค่าใช้จ่าย':    'rgba(251,191,36,.2);#fde047',
+  'ค่าสาธารณูปโภค':'rgba(34,197,94,.2);#86efac',
+  'บุคลากร':       'rgba(249,115,22,.2);#fdba74',
+};
+
+function renderExpenses(data) {
+  const total = data.reduce((s,e) => s + parseFloat(e.amount||0), 0);
+  document.getElementById('expensesCount').textContent = `${data.length} รายการ`;
+  document.getElementById('expTotal').textContent = '฿' + total.toLocaleString('th-TH');
+  document.getElementById('expCount').textContent = data.length;
+  document.getElementById('expAvg').textContent = data.length ? '฿' + Math.round(total/data.length).toLocaleString('th-TH') : '฿0';
+
+  // Mobile
+  const cards = document.getElementById('expenseMobileCards');
+  if (cards) {
+    cards.innerHTML = data.map(e => {
+      const [bg, col] = (catColors[e.category]||'rgba(99,102,241,.2);#818cf8').split(';');
+      return `<div class="glass" style="padding:14px;display:flex;align-items:center;gap:12px;">
+        <div style="background:${bg};border-radius:12px;padding:10px;flex-shrink:0;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.875rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            <span class="tag" style="background:${bg};color:${col};">${e.category}</span>
+            <span style="font-size:.65rem;color:#475569;">${(e.date||'').substring(0,8)}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:.95rem;font-weight:800;color:#f87171;">฿${parseFloat(e.amount).toLocaleString('th-TH')}</div>
+          <button onclick="deleteItem('expense','${e.id}')" style="font-size:.65rem;color:#f87171;background:none;border:none;cursor:pointer;font-family:'Prompt',sans-serif;">ลบ</button>
+        </div>
+      </div>`;
+    }).join('') || '<div style="text-align:center;color:#475569;padding:30px;font-size:.85rem;">ยังไม่มีข้อมูล</div>';
+  }
+
+  // Desktop
+  const tbody = document.getElementById('expenseBody');
+  if (tbody) {
+    tbody.innerHTML = data.map(e => {
+      const [bg, col] = (catColors[e.category]||'rgba(99,102,241,.2);#818cf8').split(';');
+      return `<tr>
+        <td style="color:#64748b;font-size:.78rem;">${(e.date||'').substring(0,8)}</td>
+        <td style="color:#e2e8f0;font-weight:500;">${e.name}</td>
+        <td><span class="tag" style="background:${bg};color:${col};">${e.category}</span></td>
+        <td style="color:#f87171;font-weight:700;">฿${parseFloat(e.amount).toLocaleString('th-TH')}</td>
+        <td style="color:#64748b;font-size:.78rem;">${e.note||''}</td>
+        <td><button onclick="deleteItem('expense','${e.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:4px 8px;font-size:.7rem;color:#f87171;cursor:pointer;font-family:'Prompt',sans-serif;">ลบ</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#475569;">ยังไม่มีข้อมูล</td></tr>';
+  }
+}
+
+// ── RENDER PRODUCTS ──────────────────────────────
+function renderProducts(data) {
+  const grid = document.getElementById('productGrid');
+  document.getElementById('productsCount').textContent = `${data.length} รายการ`;
+  if (!grid) return;
+  grid.innerHTML = data.map(p => {
+    const isLow = parseInt(p.stock) < 10;
+    const pct = Math.min(parseInt(p.stock)/60*100, 100);
+    return `<div class="product-card">
+      <div style="background:${p.color||'rgba(99,102,241,.2)'};padding:22px;text-align:center;font-size:2.2rem;">${p.img||'📦'}</div>
+      <div style="padding:14px;">
+        <div style="font-size:.8rem;font-weight:700;color:#e2e8f0;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-size:.68rem;color:#64748b;margin-bottom:8px;">${p.category}</div>
+        <div class="flex items-center justify-between">
+          <div style="font-size:.9rem;font-weight:800;color:#818cf8;">฿${parseFloat(p.price).toLocaleString('th-TH')}</div>
+          <span class="badge ${isLow?'badge-red':'badge-green'}" style="font-size:.63rem;">${isLow?'⚠ ':''}${p.stock} ชิ้น</span>
+        </div>
+        <div style="font-size:.68rem;color:#64748b;margin-top:6px;">ขายแล้ว: <span style="color:#a855f7;">${p.sold} ชิ้น</span></div>
+        <div style="height:3px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:8px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${isLow?'linear-gradient(90deg,#ef4444,#f97316)':'linear-gradient(90deg,#6366f1,#a855f7)'};transition:width .5s;"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="grid-column:span 2;text-align:center;color:#475569;padding:40px;font-size:.875rem;">ยังไม่มีสินค้า</div>';
+}
+
+function filterProductsLocal(q) {
+  const f = cachedProducts.filter(p => p.name.includes(q) || p.category.includes(q));
+  renderProducts(f);
+}
+
+// ── DELETE ──────────────────────────────
+function deleteItem(type, id) {
+  const labels = { order:'คำสั่งซื้อ', expense:'รายจ่าย', product:'สินค้า' };
+  showConfirm('ยืนยันการลบ', `ต้องการลบ${labels[type]} ${id} ใช่ไหม?`, async () => {
+    if (!IS_DEMO) {
+      showLoading('กำลังลบ...');
+      const r = await apiGet('delete'+type.charAt(0).toUpperCase()+type.slice(1), { id });
+      hideLoading();
+      if (!r || !r.success) { showToast('ลบล้มเหลว: '+(r?.message||'Error'), 'error'); return; }
+    }
+    // Remove from cache
+    if (type==='order')   cachedOrders   = cachedOrders.filter(o => o.id!==id);
+    if (type==='expense') cachedExpenses = cachedExpenses.filter(e => e.id!==id);
+    if (type==='product') cachedProducts = cachedProducts.filter(p => p.id!==id);
+    if (type==='order')   renderOrders(cachedOrders);
+    if (type==='expense') renderExpenses(cachedExpenses);
+    if (type==='product') renderProducts(cachedProducts);
+    showToast('ลบเรียบร้อย!', 'success');
+  });
+}
+
+// ═══════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════
+const modalForms = {
+  order: {
+    title: 'เพิ่มคำสั่งซื้อ',
+    html: `<div style="display:flex;flex-direction:column;gap:14px;">
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อลูกค้า *</label><input id="f_customer" type="text" class="input-glass" placeholder="ระบุชื่อลูกค้า"></div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">สินค้า *</label><input id="f_product" type="text" class="input-glass" placeholder="ชื่อสินค้า"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">จำนวน</label><input id="f_qty" type="number" class="input-glass" placeholder="1" min="1" value="1"></div>
+        <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">ราคา/ชิ้น</label><input id="f_price" type="number" class="input-glass" placeholder="0.00"></div>
+      </div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">สถานะ</label>
+        <select id="f_status" class="input-glass"><option value="paid">ชำระแล้ว</option><option value="unpaid">รอชำระ</option><option value="shipping">จัดส่ง</option></select></div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">หมายเหตุ</label><input id="f_note" type="text" class="input-glass" placeholder="หมายเหตุ (ถ้ามี)"></div>
+      <button onclick="submitForm('order')" id="submitBtn" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">
+        <span id="submitBtnText">💾 บันทึกคำสั่งซื้อ</span>
+      </button>
+    </div>`
+  },
+  expense: {
+    title: 'บันทึกรายจ่าย',
+    html: `<div style="display:flex;flex-direction:column;gap:14px;">
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">รายการ *</label><input id="f_name" type="text" class="input-glass" placeholder="ชื่อรายจ่าย"></div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">หมวดหมู่</label>
+        <select id="f_category" class="input-glass"><option>สินค้า</option><option>โลจิสติกส์</option><option>บรรจุภัณฑ์</option><option>การตลาด</option><option>ค่าใช้จ่าย</option><option>ค่าสาธารณูปโภค</option><option>บุคลากร</option></select></div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">จำนวนเงิน (บาท) *</label><input id="f_amount" type="number" class="input-glass" placeholder="0.00"></div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">หมายเหตุ</label><input id="f_note" type="text" class="input-glass" placeholder="หมายเหตุ"></div>
+      <button onclick="submitForm('expense')" id="submitBtn" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">
+        <span id="submitBtnText">💾 บันทึกรายจ่าย</span>
+      </button>
+    </div>`
+  },
+  product: {
+    title: 'เพิ่มสินค้า',
+    html: `<div style="display:flex;flex-direction:column;gap:14px;">
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อสินค้า *</label><input id="f_name" type="text" class="input-glass" placeholder="ชื่อสินค้า"></div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">หมวดหมู่</label>
+        <select id="f_category" class="input-glass"><option>เสื้อผ้า</option><option>รองเท้า</option><option>กระเป๋า</option><option>แฟชั่น</option><option>นาฬิกา</option><option>อื่นๆ</option></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">ราคาขาย</label><input id="f_price" type="number" class="input-glass" placeholder="0.00"></div>
+        <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">ต้นทุน</label><input id="f_cost" type="number" class="input-glass" placeholder="0.00"></div>
+      </div>
+      <div><label style="font-size:.75rem;color:#64748b;display:block;margin-bottom:6px;">สต็อก (ชิ้น)</label><input id="f_stock" type="number" class="input-glass" placeholder="0"></div>
+      <button onclick="submitForm('product')" id="submitBtn" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">
+        <span id="submitBtnText">💾 เพิ่มสินค้า</span>
+      </button>
+    </div>`
+  }
+};
+
+function openModal(type) {
+  const f = modalForms[type];
+  document.getElementById('modalTitle').textContent = f.title;
+  document.getElementById('modalContent').innerHTML = f.html;
+  document.getElementById('modalOverlay').classList.add('open');
+  lucide.createIcons();
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalBackdrop(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+function openFAB() { const page = document.querySelector('.page.active')?.id?.replace('page-','') || 'dashboard'; openModal(page==='dashboard'?'order':page.replace('s','').replace('expense','expense').replace('product','product').replace('order','order')); }
+
+async function submitForm(type) {
+  const btn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('submitBtnText');
+  const originalText = btnText?.textContent || '';
+
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = 'กำลังบันทึก...';
+
+  try {
+    let data = {};
+    if (type === 'order') {
+      const customer = document.getElementById('f_customer')?.value?.trim();
+      const product  = document.getElementById('f_product')?.value?.trim();
+      const qty      = document.getElementById('f_qty')?.value;
+      const price    = document.getElementById('f_price')?.value;
+      if (!customer || !product) { showToast('กรุณากรอกชื่อลูกค้าและสินค้า', 'error'); return; }
+      data = { customer, product, qty: qty||1, price: price||0, status: document.getElementById('f_status')?.value || 'unpaid', note: document.getElementById('f_note')?.value || '' };
+    }
+    if (type === 'expense') {
+      const name   = document.getElementById('f_name')?.value?.trim();
+      const amount = document.getElementById('f_amount')?.value;
+      if (!name || !amount) { showToast('กรุณากรอกรายการและจำนวนเงิน', 'error'); return; }
+      data = { name, category: document.getElementById('f_category')?.value || 'อื่นๆ', amount, note: document.getElementById('f_note')?.value || '' };
+    }
+    if (type === 'product') {
+      const name = document.getElementById('f_name')?.value?.trim();
+      if (!name) { showToast('กรุณากรอกชื่อสินค้า', 'error'); return; }
+      data = { name, category: document.getElementById('f_category')?.value || 'อื่นๆ', price: document.getElementById('f_price')?.value||0, cost: document.getElementById('f_cost')?.value||0, stock: document.getElementById('f_stock')?.value||0 };
+    }
+
+    let newItem;
+    if (!IS_DEMO) {
+      const r = await apiPost('add'+type.charAt(0).toUpperCase()+type.slice(1), data);
+      if (!r || !r.success) { showToast('บันทึกล้มเหลว: '+(r?.message||'Error'), 'error'); return; }
+      newItem = { id: r.id, ...data, amount: (parseFloat(data.qty)||1)*(parseFloat(data.price)||0), date: new Date().toLocaleDateString('th-TH'), img:'📦', color:'rgba(99,102,241,.2)', sold:0 };
+    } else {
+      const fakeId = type.toUpperCase().substring(0,3) + '-' + Date.now().toString(36).toUpperCase();
+      newItem = { id: fakeId, ...data, amount: (parseFloat(data.qty)||1)*(parseFloat(data.price)||0), date: new Date().toLocaleDateString('th-TH'), img:'📦', color:'rgba(99,102,241,.2)', sold:0 };
+    }
+
+    // Add to cache and re-render
+    if (type==='order')   { cachedOrders.unshift(newItem);   renderOrders(cachedOrders);   updateOrderCount(cachedOrders.length); }
+    if (type==='expense') { cachedExpenses.unshift(newItem); renderExpenses(cachedExpenses); }
+    if (type==='product') { cachedProducts.unshift(newItem); renderProducts(cachedProducts); }
+
+    closeModal();
+    const msgs = { order:'เพิ่มคำสั่งซื้อสำเร็จ! ✅', expense:'บันทึกรายจ่ายสำเร็จ! ✅', product:'เพิ่มสินค้าสำเร็จ! ✅' };
+    showToast(msgs[type] + (IS_DEMO ? ' (Demo)' : ' → Google Sheets'), 'success');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (btnText) btnText.textContent = originalText;
+  }
+}
+
+// ═══════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════
+const pageMeta = {
+  dashboard: { title:'แดชบอร์ด',   sub:'ภาพรวมธุรกิจวันนี้' },
+  orders:    { title:'คำสั่งซื้อ', sub:'จัดการออเดอร์ทั้งหมด' },
+  expenses:  { title:'รายจ่าย',    sub:'บันทึกค่าใช้จ่าย' },
+  products:  { title:'สินค้า',     sub:'จัดการคลังสินค้า' },
+  reports:   { title:'รายงาน',     sub:'วิเคราะห์ผลประกอบการ' },
+  settings:  { title:'ตั้งค่า',    sub:'กำหนดค่าระบบและการเชื่อมต่อ' },
+};
+
+function navigateTo(page, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  const m = pageMeta[page] || {};
+  document.getElementById('pageTitle').textContent = m.title || page;
+  document.getElementById('pageSubtitle').textContent = m.sub || '';
+  if (page==='reports') setTimeout(initReportCharts, 100);
+  if (window.innerWidth <= 768) closeMobileSidebar();
+  lucide.createIcons();
+}
+
+async function refreshCurrentPage() {
+  const refreshIcon = document.getElementById('refreshIcon');
+  refreshIcon.style.animation = 'spin .6s linear infinite';
+  showToast('กำลังรีเฟรช...', 'info');
+
+  const [orders, expenses, products] = await Promise.all([loadOrders(), loadExpenses(), loadProducts()]);
+  renderOrders(orders);
+  renderExpenses(expenses);
+  renderProducts(products);
+  await loadDashboardPage();
+
+  setTimeout(() => { refreshIcon.style.animation = ''; }, 800);
+  showToast('อัปเดตข้อมูลเรียบร้อย' + (IS_DEMO ? ' (Demo)' : ' จาก Google Sheets'), 'success');
+}
+
+// ═══════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════
+function saveUrl() {
+  const url = document.getElementById('settingsUrl').value.trim();
+  if (!url) { showToast('กรุณากรอก URL', 'error'); return; }
+  SCRIPT_URL = url;
+  IS_DEMO = false;
+  localStorage.setItem('shopaccount_url', url);
+  updateModeDisplay();
+  showToast('บันทึก URL เรียบร้อย! ลองรีเฟรชข้อมูลได้เลย', 'success');
+}
+
+async function testConnection() {
+  const url = document.getElementById('settingsUrl').value.trim();
+  if (!url) { showToast('กรุณากรอก URL ก่อน', 'error'); return; }
+  const res = document.getElementById('connResult');
+  res.style.display = 'block';
+  res.innerHTML = '⏳ กำลังทดสอบ...';
+  res.style.background = 'rgba(251,191,36,.1)'; res.style.color = '#fbbf24'; res.style.border = '1px solid rgba(251,191,36,.3)';
+
+  try {
+    const testUrl = new URL(url);
+    testUrl.searchParams.set('action', 'getDashboard');
+    const r = await fetch(testUrl.toString(), { redirect:'follow' });
+    const data = await r.json();
+    if (data.success !== false) {
+      res.innerHTML = '✅ เชื่อมต่อสำเร็จ! Google Sheets พร้อมใช้งาน';
+      res.style.background='rgba(34,197,94,.1)'; res.style.color='#4ade80'; res.style.border='1px solid rgba(34,197,94,.3)';
+      updateConnStatus('online', 'เชื่อมต่อแล้ว (Google Sheets)');
+    } else {
+      throw new Error(data.message || 'Response error');
+    }
+  } catch(e) {
+    res.innerHTML = '❌ เชื่อมต่อล้มเหลว: ' + e.message + '<br><small style="opacity:.7">ตรวจสอบว่า Deploy เป็น "Anyone" แล้ว</small>';
+    res.style.background='rgba(239,68,68,.1)'; res.style.color='#f87171'; res.style.border='1px solid rgba(239,68,68,.3)';
+  }
+}
+
+function updateModeDisplay() {
+  const modeLabel = document.getElementById('modeLabel');
+  const modeBadge = document.getElementById('modeBadge');
+  if (IS_DEMO || !SCRIPT_URL) {
+    if (modeLabel) modeLabel.textContent = 'ใช้ข้อมูลตัวอย่าง (ไม่บันทึกจริง)';
+    if (modeBadge) { modeBadge.textContent='Demo'; modeBadge.style.cssText='background:rgba(251,191,36,.15);color:#facc15;border:1px solid rgba(251,191,36,.3);padding:3px 10px;border-radius:999px;font-size:.75rem;'; }
+  } else {
+    if (modeLabel) modeLabel.textContent = 'เชื่อมต่อ Google Sheets จริง';
+    if (modeBadge) { modeBadge.textContent='Live'; modeBadge.style.cssText='background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);padding:3px 10px;border-radius:999px;font-size:.75rem;'; }
+  }
+}
+
+function exportToCSV() {
+  const rows = [['ID','ลูกค้า','สินค้า','ยอด','สถานะ','วันที่']];
+  cachedOrders.forEach(o => rows.push([o.id, o.customer, o.product, o.amount, o.status, o.date]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'orders_'+Date.now()+'.csv'; a.click();
+  showToast('ดาวน์โหลด CSV เรียบร้อย!', 'success');
+}
+
+// ═══════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════
+function setDate() {
+  const el = document.getElementById('lastUpdated');
+  if (el) el.textContent = new Date().toLocaleString('th-TH', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+}
+
+function updateConnStatus(state, text) {
+  const dot  = document.getElementById('connDot');
+  const span = document.getElementById('connText');
+  if (dot)  { dot.className = 'conn-dot ' + state; }
+  if (span) { span.textContent = text; }
+}
+
+function updateOrderCount(n) {
+  const badge = document.getElementById('orderCountBadge');
+  if (badge) badge.textContent = n;
+}
+
 function toggleSidebar() {
   if (window.innerWidth <= 768) {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    sidebar.classList.toggle('mobile-open');
-    overlay.classList.toggle('show');
+    document.getElementById('sidebar').classList.toggle('mobile-open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
   } else {
     sidebarOpen = !sidebarOpen;
-    const sidebar = document.getElementById('sidebar');
-    const navbar  = document.getElementById('navbar');
-    const main    = document.getElementById('mainContent');
     if (sidebarOpen) {
-      sidebar.classList.remove('collapsed');
-      navbar.style.left = '260px';
-      main.classList.remove('expanded');
+      document.getElementById('sidebar').classList.remove('collapsed');
+      document.getElementById('navbar').style.left = '260px';
+      document.getElementById('mainContent').classList.remove('expanded');
     } else {
-      sidebar.classList.add('collapsed');
-      navbar.style.left = '0';
-      main.classList.add('expanded');
+      document.getElementById('sidebar').classList.add('collapsed');
+      document.getElementById('navbar').style.left = '0';
+      document.getElementById('mainContent').classList.add('expanded');
     }
   }
 }
@@ -1135,338 +1548,28 @@ function closeMobileSidebar() {
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
 
-// ── BOTTOM NAV ──────────────────────────────────────────
 function setBottomNav(page) {
   document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById('bnav-' + page);
+  const el = document.getElementById('bnav-'+page);
   if (el) el.classList.add('active');
 }
 
-function openFabModal() {
-  openModal('order');
+function showLoading(text = 'กำลังโหลด...') {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+function showToast(msg, type='success') {
+  const icons = { success:'check-circle', error:'x-circle', info:'info' };
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-'+type;
+  toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${type==='success'?'<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>':type==='error'?'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { if(toast.parentNode) container.removeChild(toast); }, 3600);
 }
 
-// ── COUNTER ANIMATION ──────────────────────────────────────────
-function animateCounters() {
-  document.querySelectorAll('.counter').forEach(el => {
-    const target = parseInt(el.dataset.target);
-    const prefix = el.dataset.prefix || '';
-    const useFormat = el.dataset.format === 'true';
-    let start = 0;
-    const duration = 1500;
-    const step = Math.ceil(target / (duration / 16));
-    const timer = setInterval(() => {
-      start = Math.min(start + step, target);
-      const val = useFormat ? start.toLocaleString('th-TH') : start;
-      el.textContent = prefix + val;
-      if (start >= target) clearInterval(timer);
-    }, 16);
-  });
-}
-
-// ── CHARTS ──────────────────────────────────────────
-const chartDefaults = {
-  color: '#94a3b8',
-  plugins: { legend: { display: false }, tooltip: {
-    backgroundColor: 'rgba(15,23,42,0.9)',
-    titleColor: '#e2e8f0', bodyColor: '#94a3b8',
-    borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-    padding: 12, cornerRadius: 12,
-    callbacks: { label: ctx => ' ฿' + ctx.raw.toLocaleString('th-TH') }
-  }},
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { family: 'Prompt', size: 11 } }, border: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { family: 'Prompt', size: 11 }, callback: v => '฿' + (v/1000).toFixed(0) + 'k' }, border: { display: false } }
-  }
-};
-
-function initCharts() {
-  // Sales Line Chart
-  const salesCtx = document.getElementById('salesChart');
-  if (salesCtx && !chartInstances.sales) {
-    chartInstances.sales = new Chart(salesCtx, {
-      type: 'line',
-      data: {
-        labels: ['อา','จ','อ','พ','พฤ','ศ','ส'],
-        datasets: [{
-          label: 'ยอดขาย',
-          data: [42000, 58000, 51000, 67000, 73000, 62000, 84750],
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99,102,241,0.1)',
-          fill: true,
-          tension: 0.45,
-          pointBackgroundColor: '#6366f1',
-          pointBorderColor: 'rgba(99,102,241,0.5)',
-          pointRadius: 4, pointHoverRadius: 7,
-          borderWidth: 2.5,
-        },{
-          label: 'สัปดาห์ที่แล้ว',
-          data: [38000, 49000, 44000, 60000, 65000, 54000, 71000],
-          borderColor: 'rgba(168,85,247,0.5)',
-          backgroundColor: 'transparent',
-          fill: false, tension: 0.45, borderDash: [5,5],
-          pointBackgroundColor: '#a855f7', pointRadius: 3,
-          borderWidth: 1.5,
-        }]
-      },
-      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
-        plugins: { ...chartDefaults.plugins, legend: { display: true, labels: { color: '#64748b', font: { family: 'Prompt', size: 11 }, usePointStyle: true, pointStyleWidth: 10 } } }
-      }
-    });
-  }
-
-  // Expense Bar Chart
-  const expCtx = document.getElementById('expenseChart');
-  if (expCtx && !chartInstances.expense) {
-    chartInstances.expense = new Chart(expCtx, {
-      type: 'bar',
-      data: {
-        labels: ['สินค้า','โลจิ','แพ็ค','Ads','เช่า','ไฟฟ้า','บุคลากร'],
-        datasets: [{
-          data: [28000, 4200, 2800, 7700, 8000, 1850, 15000],
-          backgroundColor: ['rgba(99,102,241,0.7)','rgba(14,165,233,0.7)','rgba(168,85,247,0.7)','rgba(244,114,182,0.7)','rgba(251,191,36,0.7)','rgba(34,197,94,0.7)','rgba(249,115,22,0.7)'],
-          borderRadius: 8, borderSkipped: false,
-        }]
-      },
-      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
-    });
-  }
-}
-
-function initReportCharts() {
-  const mCtx = document.getElementById('monthlyChart');
-  if (mCtx && !chartInstances.monthly) {
-    chartInstances.monthly = new Chart(mCtx, {
-      type: 'bar',
-      data: {
-        labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],
-        datasets: [{
-          label: 'รายรับ',
-          data: [980000,1050000,1100000,1247850,0,0,0,0,0,0,0,0],
-          backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 8, borderSkipped: false,
-        },{
-          label: 'รายจ่าย',
-          data: [820000,880000,830000,892400,0,0,0,0,0,0,0,0],
-          backgroundColor: 'rgba(244,114,182,0.6)', borderRadius: 8, borderSkipped: false,
-        }]
-      },
-      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
-        plugins: { ...chartDefaults.plugins, legend: { display: true, labels: { color: '#64748b', font: { family: 'Prompt', size: 11 }, usePointStyle: true } } }
-      }
-    });
-  }
-
-  const pCtx = document.getElementById('profitChart');
-  if (pCtx && !chartInstances.profit) {
-    chartInstances.profit = new Chart(pCtx, {
-      type: 'line',
-      data: {
-        labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.'],
-        datasets: [{
-          label: 'กำไรสุทธิ',
-          data: [160000,170000,270000,355450],
-          borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,0.1)',
-          fill: true, tension: 0.4, borderWidth: 2.5,
-          pointBackgroundColor: '#4ade80', pointRadius: 5,
-        }]
-      },
-      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
-    });
-  }
-  lucide.createIcons();
-}
-
-// ── RENDER ORDERS ──────────────────────────────────────────
-function renderOrders(data) {
-  const statusMap = {
-    paid:     '<span class="badge badge-green">ชำระแล้ว</span>',
-    unpaid:   '<span class="badge badge-red">รอชำระ</span>',
-    shipping: '<span class="badge badge-blue">จัดส่ง</span>',
-  };
-  const tbody = document.getElementById('ordersBody');
-  if (!tbody) return;
-  tbody.innerHTML = data.map(o => `
-    <tr>
-      <td style="color:#818cf8;font-weight:600;font-size:0.8rem;">${o.id}</td>
-      <td style="color:#e2e8f0;font-weight:500;">${o.customer}</td>
-      <td style="color:#94a3b8;font-size:0.8rem;">${o.product}</td>
-      <td style="color:#e2e8f0;font-weight:700;">฿${o.amount.toLocaleString('th-TH')}</td>
-      <td>${statusMap[o.status]||''}</td>
-      <td style="color:#64748b;font-size:0.75rem;">${o.date}</td>
-      <td>
-        <button onclick="showToast('ดูรายละเอียด ${o.id}','info')" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:5px 10px;font-size:0.7rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">ดู</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function filterOrders(q) {
-  const filtered = ordersData.filter(o =>
-    o.customer.includes(q) || o.id.includes(q) || o.product.includes(q)
-  );
-  renderOrders(filtered);
-}
-
-function filterByStatus(status) {
-  const filtered = status ? ordersData.filter(o => o.status === status) : ordersData;
-  renderOrders(filtered);
-}
-
-// ── RENDER EXPENSES ──────────────────────────────────────────
-function renderExpenses(data) {
-  // Mobile Cards
-  const cards = document.getElementById('expenseMobileCards');
-  if (cards) {
-    cards.innerHTML = data.map(e => {
-      const colorStr = catColors[e.category] || 'rgba(99,102,241,0.2);color:#818cf8';
-      const [bg, col] = colorStr.split(';color:');
-      return `
-      <div class="glass" style="padding:14px;display:flex;align-items:center;gap:12px;">
-        <div style="background:${bg};border-radius:12px;padding:10px;flex-shrink:0;">
-          <i data-lucide="receipt" style="width:18px;height:18px;color:${col};"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.875rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
-            <span class="tag" style="background:${bg};color:${col};">${e.category}</span>
-            <span style="font-size:0.65rem;color:#475569;">${e.date}</span>
-          </div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <div style="font-size:0.95rem;font-weight:800;color:#f87171;">฿${e.amount.toLocaleString('th-TH')}</div>
-        </div>
-      </div>`;
-    }).join('');
-    lucide.createIcons();
-  }
-
-  // Desktop Table
-  const tbody = document.getElementById('expenseBody');
-  if (tbody) {
-    tbody.innerHTML = data.map(e => {
-      const colorStr = catColors[e.category] || 'rgba(99,102,241,0.2);color:#818cf8';
-      const [bg, col] = colorStr.split(';color:');
-      return `<tr>
-        <td style="color:#64748b;font-size:0.8rem;">${e.date}</td>
-        <td style="color:#e2e8f0;font-weight:500;">${e.name}</td>
-        <td><span class="tag" style="background:${bg};color:${col};">${e.category}</span></td>
-        <td style="color:#f87171;font-weight:700;">฿${e.amount.toLocaleString('th-TH')}</td>
-        <td style="color:#64748b;font-size:0.8rem;">${e.note}</td>
-        <td><button onclick="showToast('แก้ไข ${e.name}','info')" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:4px 10px;font-size:0.7rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">แก้ไข</button></td>
-      </tr>`;
-    }).join('');
-  }
-}
-
-// ── RENDER PRODUCTS ──────────────────────────────────────────
-function renderProducts(data) {
-  const grid = document.getElementById('productGrid');
-  if (!grid) return;
-  grid.innerHTML = data.map(p => {
-    const isLow = p.stock < 10;
-    return `
-    <div class="product-card" onclick="showToast('${p.name} - ${p.cat}','info')">
-      <div style="background:${p.color};padding:24px;text-align:center;font-size:2.5rem;">${p.img}</div>
-      <div style="padding:14px;">
-        <div style="font-size:0.8rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-        <div style="font-size:0.7rem;color:#64748b;margin-bottom:8px;">${p.cat}</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div style="font-size:0.95rem;font-weight:800;color:#818cf8;">฿${p.price.toLocaleString('th-TH')}</div>
-          <span class="${isLow ? 'badge badge-red' : 'badge badge-green'}" style="font-size:0.65rem;">
-            ${isLow ? '⚠ ' : ''}${p.stock} ชิ้น
-          </span>
-        </div>
-        <div style="margin-top:8px;font-size:0.7rem;color:#64748b;">ขายแล้ว: <span style="color:#a855f7;">${p.sold} ชิ้น</span></div>
-        <!-- Stock Bar -->
-        <div style="height:3px;border-radius:4px;background:rgba(255,255,255,0.08);margin-top:10px;overflow:hidden;">
-          <div style="height:100%;width:${Math.min(p.stock/60*100,100)}%;background:${isLow ? 'linear-gradient(90deg,#ef4444,#f97316)' : 'linear-gradient(90deg,#6366f1,#a855f7)'};border-radius:4px;transition:width 0.5s;"></div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── MODAL ──────────────────────────────────────────
-function openModal(type) {
-  const overlay = document.getElementById('modalOverlay');
-  const title   = document.getElementById('modalTitle');
-  const content = document.getElementById('modalContent');
-
-  const forms = {
-    order: {
-      t: 'เพิ่มคำสั่งซื้อ',
-      html: `
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อลูกค้า</label>
-            <input type="text" class="input-glass" placeholder="ระบุชื่อลูกค้า"></div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">สินค้า</label>
-            <input type="text" class="input-glass" placeholder="ชื่อสินค้า"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">จำนวน</label>
-              <input type="number" class="input-glass" placeholder="1" min="1"></div>
-            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ราคา</label>
-              <input type="number" class="input-glass" placeholder="0.00"></div>
-          </div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">สถานะ</label>
-            <select class="input-glass"><option value="paid">ชำระแล้ว</option><option value="unpaid">รอชำระ</option><option value="shipping">จัดส่ง</option></select></div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมายเหตุ</label>
-            <textarea class="input-glass" rows="2" placeholder="หมายเหตุ (ถ้ามี)" style="resize:none;"></textarea></div>
-          <button onclick="saveModal('order')" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">บันทึกคำสั่งซื้อ</button>
-        </div>`
-    },
-    expense: {
-      t: 'บันทึกรายจ่าย',
-      html: `
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">รายการ</label>
-            <input type="text" class="input-glass" placeholder="ชื่อรายจ่าย"></div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมวดหมู่</label>
-            <select class="input-glass"><option>สินค้า</option><option>โลจิสติกส์</option><option>บรรจุภัณฑ์</option><option>การตลาด</option><option>ค่าใช้จ่าย</option><option>บุคลากร</option></select></div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">จำนวนเงิน (บาท)</label>
-            <input type="number" class="input-glass" placeholder="0.00"></div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมายเหตุ</label>
-            <input type="text" class="input-glass" placeholder="หมายเหตุ"></div>
-          <button onclick="saveModal('expense')" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">บันทึกรายจ่าย</button>
-        </div>`
-    },
-    product: {
-      t: 'เพิ่มสินค้า',
-      html: `
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อสินค้า</label>
-            <input type="text" class="input-glass" placeholder="ชื่อสินค้า"></div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมวดหมู่</label>
-            <select class="input-glass"><option>เสื้อผ้า</option><option>รองเท้า</option><option>กระเป๋า</option><option>แฟชั่น</option><option>นาฬิกา</option></select></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ราคา</label>
-              <input type="number" class="input-glass" placeholder="0.00"></div>
-            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">สต็อก</label>
-              <input type="number" class="input-glass" placeholder="0"></div>
-          </div>
-          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ต้นทุน</label>
-            <input type="number" class="input-glass" placeholder="0.00"></div>
-          <button onclick="saveModal('product')" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">เพิ่มสินค้า</button>
-        </div>`
-    }
-  };
-
-  const f = forms[type] || forms.order;
-  title.textContent = f.t;
-  content.innerHTML = f.html;
-  overlay.classList.add('open');
-  lucide.createIcons();
-}
-
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
-function closeModalOnBackdrop(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
-
-function saveModal(type) {
-  closeModal();
-  const msgs = { order:'เพิ่มคำสั่งซื้อเรียบร้อย!', expense:'บันทึกรายจ่ายเรียบร้อย!', product:'เพิ่มสินค้าเรียบร้อย!' };
-  showToast(msgs[type] || 'บันทึกเรียบร้อย!', 'success');
-}
-
-// ── CONFIRM DIALOG ──────────────────────────────────────────
 function showConfirm(title, msg, cb) {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
@@ -1475,41 +1578,19 @@ function showConfirm(title, msg, cb) {
 }
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
 
-// ── TOAST ──────────────────────────────────────────
-function showToast(msg, type='success') {
-  const icons = { success:'check-circle', error:'x-circle', info:'info' };
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<i data-lucide="${icons[type]||'info'}" style="width:18px;height:18px;flex-shrink:0;"></i><span>${msg}</span>`;
-  container.appendChild(toast);
-  lucide.createIcons();
-  setTimeout(() => { if (toast.parentNode) container.removeChild(toast); }, 3500);
-}
-
-// ── NOTIFICATION PANEL ──────────────────────────────────────────
-function showNotifPanel() {
-  showToast('คุณมีการแจ้งเตือนใหม่ 3 รายการ','info');
-}
-
-// ── RIPPLE ──────────────────────────────────────────
-document.addEventListener('click', function(e) {
+// Ripple
+document.addEventListener('click', e => {
   const btn = e.target.closest('.ripple-container');
   if (!btn) return;
-  addRipple(btn, e);
-});
-
-function addRipple(btn, e) {
   const r = document.createElement('span');
   r.classList.add('ripple');
   const rect = btn.getBoundingClientRect();
-  r.style.left = (e.clientX - rect.left) + 'px';
-  r.style.top  = (e.clientY - rect.top)  + 'px';
+  r.style.left = (e.clientX-rect.left)+'px';
+  r.style.top  = (e.clientY-rect.top)+'px';
   btn.appendChild(r);
   setTimeout(() => r.remove(), 700);
-}
+});
 
-// ── RESPONSIVE RESIZE ──────────────────────────────────────────
 window.addEventListener('resize', () => {
   if (window.innerWidth > 768) {
     document.getElementById('sidebar').classList.remove('mobile-open');
@@ -1520,10 +1601,6 @@ window.addEventListener('resize', () => {
     }
   }
 });
-
-// ── AUTO LOGIN FOR DEMO ──────────────────────────────────────────
-// Uncomment below to skip login:
-// window.addEventListener('load', () => { doLogin(); });
 </script>
 </body>
 </html>

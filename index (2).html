@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopAccount Pro — ระบบบัญชีร้านค้าออนไลน์</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --secondary: #a855f7;
+    --accent: #f472b6;
+    --glass-bg: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --glass-hover: rgba(255,255,255,0.08);
+    --glow-indigo: 0 0 30px rgba(99,102,241,0.3);
+    --glow-purple: 0 0 30px rgba(168,85,247,0.3);
+    --glow-pink: 0 0 30px rgba(244,114,182,0.3);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Prompt', 'Sarabun', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 10px; }
+
+  /* ── Glass Card ── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.25rem;
+  }
+  .glass-dark {
+    background: rgba(15,23,42,0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 1.25rem;
+  }
+  .glow-indigo { box-shadow: var(--glow-indigo); }
+  .glow-purple { box-shadow: var(--glow-purple); }
+  .glow-pink   { box-shadow: var(--glow-pink); }
+
+  /* ── Gradient Buttons ── */
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none; cursor: pointer; font-family: 'Prompt', sans-serif;
+    position: relative; overflow: hidden; transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.6); }
+  .btn-primary::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .btn-primary:hover::after { opacity: 1; }
+
+  /* Ripple */
+  .ripple-container { position: relative; overflow: hidden; }
+  .ripple {
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.3); pointer-events: none;
+    animation: rippleAnim 0.6s linear;
+  }
+  @keyframes rippleAnim {
+    from { width:0; height:0; opacity:1; transform:translate(-50%,-50%); }
+    to   { width:200px; height:200px; opacity:0; transform:translate(-50%,-50%); }
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed; top:0; left:0; height:100vh; width:260px; z-index:50;
+    background: rgba(15,23,42,0.85);
+    backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .sidebar.collapsed { transform: translateX(-260px); }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 16px; border-radius: 12px; cursor: pointer;
+    transition: all 0.25s; font-size: 0.92rem; font-weight: 500;
+    color: #94a3b8; position: relative; overflow: hidden;
+  }
+  .nav-item:hover { background: var(--glass-hover); color: #e2e8f0; }
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.15));
+    color: #818cf8;
+    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3), 0 0 16px rgba(99,102,241,0.15);
+  }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 60%; background: linear-gradient(#6366f1, #a855f7);
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* ── Navbar ── */
+  .navbar {
+    position: fixed; top:0; right:0; z-index:40; height:64px;
+    background: rgba(15,23,42,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── Main Content ── */
+  .main-content {
+    margin-left: 260px; padding-top: 64px;
+    min-height: 100vh; transition: margin-left 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .main-content.expanded { margin-left: 0; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    display: none; position: fixed; bottom: 0; left:0; right:0; z-index:50;
+    background: rgba(15,23,42,0.9); backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  }
+  .bottom-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; padding: 6px 12px; border-radius: 12px;
+    transition: all 0.25s; color: #64748b; font-size: 0.65rem;
+  }
+  .bottom-nav-item.active { color: #818cf8; }
+  .fab {
+    width: 52px; height: 52px; border-radius: 50%; margin-bottom: 4px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    box-shadow: 0 4px 20px rgba(99,102,241,0.5);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .fab:hover { transform: scale(1.1) rotate(45deg); }
+
+  /* ── Stat Cards ── */
+  .stat-card {
+    background: var(--glass-bg); backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
+    padding: 22px; transition: all 0.3s; cursor: default;
+  }
+  .stat-card:hover { transform: translateY(-4px); border-color: rgba(99,102,241,0.3); }
+
+  /* ── Status Badge ── */
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .badge-red   { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-yellow{ background: rgba(234,179,8,0.15);  color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
+  .badge-blue  { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .badge-indigo{ background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+
+  /* ── Category Tags ── */
+  .tag { padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+
+  /* ── Toast ── */
+  .toast-container { position: fixed; top: 76px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+    border-radius: 14px; min-width: 300px; font-size: 0.875rem;
+    backdrop-filter: blur(20px); border: 1px solid;
+    animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1), fadeOut 0.4s 3s forwards;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast-success { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); color: #4ade80; }
+  .toast-error   { background: rgba(239,68,68,0.12);  border-color: rgba(239,68,68,0.3);  color: #f87171; }
+  .toast-info    { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: #818cf8; }
+  @keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+  @keyframes fadeOut { from { opacity:1; } to { opacity:0; pointer-events:none; } }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset:0; z-index:200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity:0; pointer-events:none; transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal-box {
+    background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,27,75,0.97));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 520px; padding: 28px 24px 32px;
+    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal-box { transform: translateY(0); }
+  @media(min-width:640px) {
+    .modal-overlay { align-items: center; }
+    .modal-box { border-radius: 24px; transform: scale(0.92) translateY(20px); }
+    .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
+  }
+
+  /* ── Input ── */
+  .input-glass {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 12px 14px;
+    font-family: 'Prompt', sans-serif; font-size: 0.9rem;
+    color: #e2e8f0; width: 100%; outline: none; transition: all 0.25s;
+  }
+  .input-glass:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+  .input-glass::placeholder { color: #475569; }
+
+  .floating-label { position: relative; }
+  .floating-label label {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 0.875rem; color: #64748b; pointer-events: none; transition: all 0.2s;
+  }
+  .floating-label input:focus + label,
+  .floating-label input:not(:placeholder-shown) + label {
+    top: -10px; font-size: 0.75rem; color: #818cf8;
+    background: rgba(15,23,42,0.9); padding: 0 6px; border-radius: 4px;
+  }
+
+  /* ── Pages ── */
+  .page { display: none; animation: fadeSlideUp 0.4s cubic-bezier(0.4,0,0.2,1); }
+  .page.active { display: block; }
+  @keyframes fadeSlideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+  /* ── Skeleton ── */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+  /* ── Product Card ── */
+  .product-card {
+    background: var(--glass-bg); backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
+    overflow: hidden; transition: all 0.35s; cursor: pointer;
+  }
+  .product-card:hover { transform: scale(1.03) translateY(-4px); border-color: rgba(99,102,241,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.3), var(--glow-indigo); }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+  .data-table thead th { padding: 12px 16px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; font-weight: 600; text-align: left; }
+  .data-table tbody tr {
+    background: var(--glass-bg); transition: all 0.2s;
+  }
+  .data-table tbody tr:hover { background: rgba(99,102,241,0.08); transform: scale(1.002); }
+  .data-table tbody td { padding: 14px 16px; font-size: 0.875rem; }
+  .data-table tbody td:first-child { border-radius: 12px 0 0 12px; }
+  .data-table tbody td:last-child  { border-radius: 0 12px 12px 0; }
+
+  /* ── Confirm Dialog ── */
+  .confirm-overlay {
+    position: fixed; inset:0; z-index:300; background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px); display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition: opacity 0.25s;
+  }
+  .confirm-overlay.open { opacity:1; pointer-events:all; }
+  .confirm-box {
+    background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,27,75,0.98));
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+    padding: 32px 28px; max-width: 380px; width: 90%;
+    text-align: center; transform: scale(0.88);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .confirm-overlay.open .confirm-box { transform: scale(1); }
+
+  /* ── Login ── */
+  .login-bg {
+    min-height: 100vh; display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(ellipse at 30% 30%, rgba(99,102,241,0.2) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 70%, rgba(168,85,247,0.15) 0%, transparent 60%),
+                linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    position: fixed; inset: 0; z-index: 100;
+  }
+  .login-card {
+    background: rgba(255,255,255,0.04); backdrop-filter: blur(32px);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;
+    padding: 40px 36px; width: 90%; max-width: 400px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  /* ── Responsive ── */
+  @media(max-width: 768px) {
+    .sidebar { transform: translateX(-260px); }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .main-content { margin-left: 0 !important; padding-bottom: 80px; }
+    .navbar { left: 0 !important; }
+    .bottom-nav { display: flex; justify-content: space-around; align-items: center; }
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block !important; }
+  }
+  @media(min-width: 769px) {
+    .mobile-only { display: none !important; }
+  }
+
+  /* ── Misc ── */
+  .glow-text { background: linear-gradient(135deg, #818cf8, #a855f7, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+  select.input-glass option { background: #1e1b4b; color: #e2e8f0; }
+  .chart-container { position: relative; height: 240px; }
+  @media(min-width: 640px) { .chart-container { height: 280px; } }
+
+  /* Overlay for mobile sidebar */
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; z-index: 45;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.show { display: block; }
+
+  /* Notification dot */
+  .notif-dot {
+    position: absolute; top: 2px; right: 2px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: linear-gradient(135deg, #f472b6, #a855f7);
+    box-shadow: 0 0 6px rgba(244,114,182,0.6);
+  }
+
+  /* Scrollable table container */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-scroll::-webkit-scrollbar { height: 4px; }
+
+  /* Range chart height mobile */
+  @media(max-width: 640px) { .chart-container { height: 200px; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN PAGE
+══════════════════════════════════════ -->
+<div id="loginPage" class="login-bg">
+  <!-- Decorative orbs -->
+  <div style="position:absolute;top:10%;left:15%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.15),transparent);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:15%;right:10%;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent);pointer-events:none;"></div>
+
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="flex items-center justify-center gap-3 mb-8">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(99,102,241,0.4);">
+        <i data-lucide="shopping-bag" style="width:24px;height:24px;color:white;"></i>
+      </div>
+      <div>
+        <div class="font-bold text-xl glow-text">ShopAccount</div>
+        <div style="font-size:0.7rem;color:#64748b;margin-top:-2px;">Pro Edition</div>
+      </div>
+    </div>
+
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-white mb-1">ยินดีต้อนรับ</h1>
+      <p style="color:#64748b;font-size:0.875rem;">เข้าสู่ระบบบัญชีร้านค้าออนไลน์</p>
+    </div>
+
+    <!-- Inputs -->
+    <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px;">
+      <div class="floating-label">
+        <input type="email" class="input-glass" placeholder=" " id="loginEmail" value="admin@shopaccount.th">
+        <label>อีเมล</label>
+      </div>
+      <div class="floating-label" style="position:relative;">
+        <input type="password" class="input-glass" placeholder=" " id="loginPass" value="••••••••">
+        <label>รหัสผ่าน</label>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mb-6" style="font-size:0.8rem;">
+      <label style="display:flex;align-items:center;gap:8px;color:#94a3b8;cursor:pointer;">
+        <input type="checkbox" checked style="accent-color:#6366f1;"> จดจำฉัน
+      </label>
+      <span style="color:#818cf8;cursor:pointer;">ลืมรหัสผ่าน?</span>
+    </div>
+
+    <button onclick="doLogin()" class="btn-primary ripple-container w-full py-3 rounded-2xl text-white font-semibold text-base" style="border:none;">
+      เข้าสู่ระบบ
+    </button>
+
+    <div class="text-center mt-6" style="font-size:0.8rem;color:#475569;">
+      ระบบรักษาความปลอดภัยด้วย 256-bit SSL
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;color:#64748b;">
+        <i data-lucide="shield-check" style="width:14px;height:14px;color:#4ade80;"></i> Secure Connection
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════ -->
+<div id="appShell" style="display:none;">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar" id="sidebar">
+    <!-- Logo -->
+    <div style="padding:20px 20px 16px;" class="flex items-center gap-3">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(99,102,241,0.4);flex-shrink:0;">
+        <i data-lucide="shopping-bag" style="width:20px;height:20px;color:white;"></i>
+      </div>
+      <div>
+        <div class="font-bold text-base glow-text">ShopAccount</div>
+        <div style="font-size:0.65rem;color:#475569;">Pro Edition</div>
+      </div>
+    </div>
+
+    <div class="divider mx-4 mb-3"></div>
+
+    <!-- User Info -->
+    <div style="margin:0 12px 16px;padding:12px;border-radius:14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);">
+      <div class="flex items-center gap-3">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.875rem;flex-shrink:0;">อด</div>
+        <div style="min-width:0;">
+          <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">อดิศักดิ์ สุขใจ</div>
+          <div style="font-size:0.7rem;color:#64748b;">ผู้ดูแลระบบ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav Items -->
+    <div style="padding:0 12px;display:flex;flex-direction:column;gap:4px;">
+      <div class="nav-item active" onclick="navigateTo('dashboard',this)">
+        <i data-lucide="layout-dashboard" style="width:18px;height:18px;flex-shrink:0;"></i> แดชบอร์ด
+      </div>
+      <div class="nav-item" onclick="navigateTo('orders',this)">
+        <i data-lucide="shopping-cart" style="width:18px;height:18px;flex-shrink:0;"></i> คำสั่งซื้อ
+        <span class="ml-auto badge badge-indigo" style="font-size:0.65rem;padding:1px 8px;">12</span>
+      </div>
+      <div class="nav-item" onclick="navigateTo('expenses',this)">
+        <i data-lucide="credit-card" style="width:18px;height:18px;flex-shrink:0;"></i> รายจ่าย
+      </div>
+      <div class="nav-item" onclick="navigateTo('products',this)">
+        <i data-lucide="package" style="width:18px;height:18px;flex-shrink:0;"></i> สินค้า
+      </div>
+      <div class="nav-item" onclick="navigateTo('reports',this)">
+        <i data-lucide="bar-chart-2" style="width:18px;height:18px;flex-shrink:0;"></i> รายงาน
+      </div>
+
+      <div class="divider my-2"></div>
+
+      <div class="nav-item" onclick="navigateTo('settings',this)">
+        <i data-lucide="settings" style="width:18px;height:18px;flex-shrink:0;"></i> ตั้งค่า
+      </div>
+      <div class="nav-item" onclick="doLogout()">
+        <i data-lucide="log-out" style="width:18px;height:18px;flex-shrink:0;color:#f87171;"></i>
+        <span style="color:#f87171;">ออกจากระบบ</span>
+      </div>
+    </div>
+
+    <!-- Version -->
+    <div style="position:absolute;bottom:16px;left:20px;right:20px;font-size:0.65rem;color:#334155;text-align:center;">
+      ShopAccount Pro v2.5.0 · © 2568 All rights reserved
+    </div>
+  </nav>
+
+  <!-- ── NAVBAR ── -->
+  <header class="navbar" id="navbar" style="left:260px;right:0;">
+    <div class="flex items-center h-full px-4 gap-3">
+      <button id="sidebarToggle" onclick="toggleSidebar()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;cursor:pointer;transition:all 0.2s;">
+        <i data-lucide="menu" style="width:18px;height:18px;color:#94a3b8;"></i>
+      </button>
+
+      <!-- Page Title -->
+      <div style="flex:1;min-width:0;">
+        <h2 id="pageTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">แดชบอร์ด</h2>
+        <p style="font-size:0.7rem;color:#475569;" id="pageSubtitle">ภาพรวมธุรกิจวันนี้</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Dark Mode Toggle -->
+        <button onclick="showToast('ปัจจุบันใช้ Dark Mode อยู่แล้ว','info')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;cursor:pointer;">
+          <i data-lucide="moon" style="width:18px;height:18px;color:#818cf8;"></i>
+        </button>
+
+        <!-- Notification Bell -->
+        <button onclick="showNotifPanel()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;cursor:pointer;position:relative;">
+          <i data-lucide="bell" style="width:18px;height:18px;color:#94a3b8;"></i>
+          <div class="notif-dot"></div>
+        </button>
+
+        <!-- Avatar -->
+        <div onclick="showToast('โปรไฟล์ผู้ใช้งาน','info')" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;cursor:pointer;box-shadow:0 0 0 2px rgba(168,85,247,0.4);">อด</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main-content" id="mainContent">
+    <div style="padding:20px 16px;" id="pageContainer">
+
+      <!-- ════ DASHBOARD PAGE ════ -->
+      <div class="page active" id="page-dashboard">
+
+        <!-- Skeleton Loading (shows briefly) -->
+        <div id="skeletonLoader" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+          <div class="skeleton" style="height:110px;border-radius:20px;"></div>
+          <div class="skeleton" style="height:110px;border-radius:20px;"></div>
+          <div class="skeleton" style="height:110px;border-radius:20px;"></div>
+          <div class="skeleton" style="height:110px;border-radius:20px;"></div>
+        </div>
+
+        <!-- Real Content (hidden during skeleton) -->
+        <div id="dashContent" style="display:none;">
+          <!-- Greeting -->
+          <div style="margin-bottom:20px;">
+            <h2 style="font-size:1.3rem;font-weight:700;color:#e2e8f0;">สวัสดีตอนเช้า อดิศักดิ์ 👋</h2>
+            <p style="font-size:0.8rem;color:#64748b;margin-top:2px;">ข้อมูลอัปเดตล่าสุด: <span style="color:#818cf8;" id="lastUpdated"></span></p>
+          </div>
+
+          <!-- Stat Cards -->
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+            <!-- ยอดขาย -->
+            <div class="stat-card" style="border-top: 2px solid rgba(99,102,241,0.5);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">ยอดขายวันนี้</span>
+                <div style="background:rgba(99,102,241,0.15);border-radius:10px;padding:6px;">
+                  <i data-lucide="trending-up" style="width:16px;height:16px;color:#818cf8;"></i>
+                </div>
+              </div>
+              <div class="counter text-white font-bold" style="font-size:1.4rem;" data-target="84750" data-prefix="฿" data-format="true">฿0</div>
+              <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                <i data-lucide="arrow-up" style="width:12px;height:12px;"></i> +12.4% จากเมื่อวาน
+              </div>
+            </div>
+
+            <!-- กำไร -->
+            <div class="stat-card" style="border-top: 2px solid rgba(168,85,247,0.5);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">กำไรวันนี้</span>
+                <div style="background:rgba(168,85,247,0.15);border-radius:10px;padding:6px;">
+                  <i data-lucide="wallet" style="width:16px;height:16px;color:#a855f7;"></i>
+                </div>
+              </div>
+              <div class="counter text-white font-bold" style="font-size:1.4rem;" data-target="31200" data-prefix="฿" data-format="true">฿0</div>
+              <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                <i data-lucide="arrow-up" style="width:12px;height:12px;"></i> +8.1% จากเมื่อวาน
+              </div>
+            </div>
+
+            <!-- รายจ่าย -->
+            <div class="stat-card" style="border-top: 2px solid rgba(244,114,182,0.5);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">รายจ่าย</span>
+                <div style="background:rgba(244,114,182,0.15);border-radius:10px;padding:6px;">
+                  <i data-lucide="receipt" style="width:16px;height:16px;color:#f472b6;"></i>
+                </div>
+              </div>
+              <div class="counter text-white font-bold" style="font-size:1.4rem;" data-target="53550" data-prefix="฿" data-format="true">฿0</div>
+              <div style="font-size:0.7rem;color:#f87171;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                <i data-lucide="arrow-up" style="width:12px;height:12px;"></i> +5.3% จากเมื่อวาน
+              </div>
+            </div>
+
+            <!-- สินค้าขายดี -->
+            <div class="stat-card" style="border-top: 2px solid rgba(251,191,36,0.5);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span style="font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">สินค้าขายดี</span>
+                <div style="background:rgba(251,191,36,0.15);border-radius:10px;padding:6px;">
+                  <i data-lucide="star" style="width:16px;height:16px;color:#fbbf24;"></i>
+                </div>
+              </div>
+              <div class="text-white font-bold" style="font-size:0.95rem;line-height:1.3;">เสื้อ Uniqlo<br><span style="font-size:0.75rem;color:#a855f7;">147 ชิ้น</span></div>
+              <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                <i data-lucide="fire" style="width:12px;height:12px;"></i> ขายเร็วมาก!
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;">
+            <!-- Line Chart -->
+            <div class="glass" style="padding:20px;">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">ยอดขาย 7 วันล่าสุด</h3>
+                  <p style="font-size:0.7rem;color:#64748b;margin-top:2px;">เปรียบเทียบกับสัปดาห์ที่แล้ว</p>
+                </div>
+                <span class="badge badge-green">Live</span>
+              </div>
+              <div class="chart-container"><canvas id="salesChart"></canvas></div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="glass" style="padding:20px;">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">รายจ่ายตามหมวดหมู่</h3>
+                  <p style="font-size:0.7rem;color:#64748b;margin-top:2px;">เดือนเมษายน 2568</p>
+                </div>
+              </div>
+              <div class="chart-container"><canvas id="expenseChart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Recent Orders Mini -->
+          <div class="glass" style="padding:20px;">
+            <div class="flex items-center justify-between mb-4">
+              <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;">คำสั่งซื้อล่าสุด</h3>
+              <button onclick="navigateTo('orders',null)" style="background:none;border:none;font-size:0.75rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">ดูทั้งหมด →</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);">
+                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(168,85,247,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i data-lucide="package" style="width:16px;height:16px;color:#818cf8;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">สมชาย ใจดี</div>
+                  <div style="font-size:0.7rem;color:#64748b;">เสื้อ Uniqlo × 2</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                  <div style="font-size:0.85rem;font-weight:700;color:#4ade80;">฿890</div>
+                  <span class="badge badge-green" style="font-size:0.6rem;">ชำระแล้ว</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);">
+                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(244,114,182,0.3),rgba(168,85,247,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i data-lucide="package" style="width:16px;height:16px;color:#f472b6;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;">มานี มีนา</div>
+                  <div style="font-size:0.7rem;color:#64748b;">กระเป๋า Coach × 1</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                  <div style="font-size:0.85rem;font-weight:700;color:#fbbf24;">฿4,500</div>
+                  <span class="badge badge-yellow" style="font-size:0.6rem;">รอชำระ</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);">
+                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(34,197,94,0.3),rgba(99,102,241,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i data-lucide="package" style="width:16px;height:16px;color:#4ade80;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:0.8rem;font-weight:600;color:#e2e8f0;">วันดี ศรีสุข</div>
+                  <div style="font-size:0.7rem;color:#64748b;">รองเท้า Nike × 1</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                  <div style="font-size:0.85rem;font-weight:700;color:#4ade80;">฿3,200</div>
+                  <span class="badge badge-green" style="font-size:0.6rem;">ชำระแล้ว</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- end dashContent -->
+      </div><!-- end page-dashboard -->
+
+      <!-- ════ ORDERS PAGE ════ -->
+      <div class="page" id="page-orders">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">คำสั่งซื้อทั้งหมด</h2>
+            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">พบ 12 รายการ</p>
+          </div>
+          <button onclick="openModal('order')" class="btn-primary ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> เพิ่มคำสั่งซื้อ
+          </button>
+        </div>
+
+        <!-- Search + Filter -->
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:180px;position:relative;">
+            <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#64748b;"></i>
+            <input type="text" class="input-glass" placeholder="ค้นหาคำสั่งซื้อ..." style="padding-left:38px;" oninput="filterOrders(this.value)">
+          </div>
+          <select class="input-glass" style="width:auto;min-width:130px;" onchange="filterByStatus(this.value)">
+            <option value="">ทุกสถานะ</option>
+            <option value="paid">ชำระแล้ว</option>
+            <option value="unpaid">รอชำระ</option>
+            <option value="shipping">จัดส่ง</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="glass" style="padding:16px;">
+          <div class="table-scroll">
+            <table class="data-table" id="ordersTable">
+              <thead>
+                <tr>
+                  <th>เลขที่</th>
+                  <th>ลูกค้า</th>
+                  <th>สินค้า</th>
+                  <th>ยอด</th>
+                  <th>สถานะ</th>
+                  <th>วันที่</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ EXPENSES PAGE ════ -->
+      <div class="page" id="page-expenses">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">รายจ่าย</h2>
+            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">เดือนเมษายน 2568</p>
+          </div>
+          <button onclick="openModal('expense')" class="btn-primary ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> บันทึกรายจ่าย
+          </button>
+        </div>
+
+        <!-- Summary -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+          <div class="glass" style="padding:14px;text-align:center;">
+            <div style="font-size:0.65rem;color:#64748b;margin-bottom:4px;">รวมรายจ่าย</div>
+            <div style="font-size:1rem;font-weight:800;color:#f87171;">฿53,550</div>
+          </div>
+          <div class="glass" style="padding:14px;text-align:center;">
+            <div style="font-size:0.65rem;color:#64748b;margin-bottom:4px;">รายการ</div>
+            <div style="font-size:1rem;font-weight:800;color:#818cf8;">8</div>
+          </div>
+          <div class="glass" style="padding:14px;text-align:center;">
+            <div style="font-size:0.65rem;color:#64748b;margin-bottom:4px;">เฉลี่ย/วัน</div>
+            <div style="font-size:1rem;font-weight:800;color:#fbbf24;">฿1,785</div>
+          </div>
+        </div>
+
+        <!-- Mobile Cards / Desktop Table -->
+        <div id="expenseMobileCards" class="mobile-only" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <div id="expenseDesktopTable" class="desktop-only glass" style="padding:16px;">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
+              <tbody id="expenseBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ PRODUCTS PAGE ════ -->
+      <div class="page" id="page-products">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">สินค้าทั้งหมด</h2>
+            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">8 รายการ</p>
+          </div>
+          <button onclick="openModal('product')" class="btn-primary ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> เพิ่มสินค้า
+          </button>
+        </div>
+
+        <!-- Search -->
+        <div style="position:relative;margin-bottom:16px;">
+          <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#64748b;"></i>
+          <input type="text" class="input-glass" placeholder="ค้นหาสินค้า..." style="padding-left:38px;">
+        </div>
+
+        <!-- Product Grid -->
+        <div id="productGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;"></div>
+      </div>
+
+      <!-- ════ REPORTS PAGE ════ -->
+      <div class="page" id="page-reports">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;">รายงานสรุป</h2>
+            <p style="font-size:0.75rem;color:#64748b;margin-top:2px;">เมษายน 2568</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="showToast('กำลังสร้าง PDF...','info')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;cursor:pointer;">
+              <i data-lucide="file-text" style="width:15px;height:15px;"></i> PDF
+            </button>
+            <button onclick="showToast('กำลังสร้าง Excel...','info')" class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;cursor:pointer;">
+              <i data-lucide="table" style="width:15px;height:15px;"></i> Excel
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;">
+          <div class="glass" style="padding:16px;">
+            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">รายรับรวม</div>
+            <div style="font-size:1.2rem;font-weight:800;color:#4ade80;">฿ 1,247,850</div>
+            <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;">↑ 18.3% จากเดือนก่อน</div>
+          </div>
+          <div class="glass" style="padding:16px;">
+            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">รายจ่ายรวม</div>
+            <div style="font-size:1.2rem;font-weight:800;color:#f87171;">฿ 892,400</div>
+            <div style="font-size:0.7rem;color:#f87171;margin-top:4px;">↑ 7.2% จากเดือนก่อน</div>
+          </div>
+          <div class="glass" style="padding:16px;">
+            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">กำไรสุทธิ</div>
+            <div style="font-size:1.2rem;font-weight:800;color:#818cf8;">฿ 355,450</div>
+            <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;">↑ 42.1% จากเดือนก่อน</div>
+          </div>
+          <div class="glass" style="padding:16px;">
+            <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;">คำสั่งซื้อ</div>
+            <div style="font-size:1.2rem;font-weight:800;color:#fbbf24;">247 รายการ</div>
+            <div style="font-size:0.7rem;color:#4ade80;margin-top:4px;">↑ 15 รายการ</div>
+          </div>
+        </div>
+
+        <!-- Full Chart -->
+        <div class="glass" style="padding:20px;margin-bottom:16px;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ยอดขายรายเดือน (2568)</h3>
+          <div style="height:260px;"><canvas id="monthlyChart"></canvas></div>
+        </div>
+        <div class="glass" style="padding:20px;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">กำไร vs รายจ่าย</h3>
+          <div style="height:220px;"><canvas id="profitChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ════ SETTINGS PAGE ════ -->
+      <div class="page" id="page-settings">
+        <h2 style="font-size:1.1rem;font-weight:700;color:#e2e8f0;margin-bottom:20px;">ตั้งค่าระบบ</h2>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="glass" style="padding:20px;">
+            <h3 style="font-size:0.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ข้อมูลร้านค้า</h3>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อร้านค้า</label>
+                <input type="text" class="input-glass" value="ShopAccount Store"></div>
+              <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">อีเมล</label>
+                <input type="email" class="input-glass" value="admin@shopaccount.th"></div>
+              <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">เบอร์โทร</label>
+                <input type="tel" class="input-glass" value="062-xxx-xxxx"></div>
+              <button onclick="showToast('บันทึกข้อมูลเรียบร้อย!','success')" class="btn-primary ripple-container py-2.5 rounded-xl text-white font-semibold text-sm" style="width:100%;">บันทึกการเปลี่ยนแปลง</button>
+            </div>
+          </div>
+
+          <div class="glass" style="padding:20px;">
+            <h3 style="font-size:0.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">การแจ้งเตือน</h3>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div style="font-size:0.85rem;color:#e2e8f0;">แจ้งเตือนคำสั่งซื้อใหม่</div>
+                  <div style="font-size:0.7rem;color:#64748b;">รับการแจ้งเตือนเมื่อมีออเดอร์ใหม่</div>
+                </div>
+                <label style="position:relative;display:inline-block;width:48px;height:26px;">
+                  <input type="checkbox" checked style="opacity:0;width:0;height:0;" onchange="toggleSwitch(this)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="divider"></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <div style="font-size:0.85rem;color:#e2e8f0;">แจ้งเตือนสต็อกต่ำ</div>
+                  <div style="font-size:0.7rem;color:#64748b;">เมื่อสินค้าเหลือน้อยกว่า 10 ชิ้น</div>
+                </div>
+                <label style="position:relative;display:inline-block;width:48px;height:26px;">
+                  <input type="checkbox" checked style="opacity:0;width:0;height:0;" onchange="toggleSwitch(this)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass" style="padding:20px;">
+            <h3 style="font-size:0.9rem;font-weight:700;color:#e2e8f0;margin-bottom:16px;">ความปลอดภัย</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button onclick="showToast('ระบบส่งลิงก์เปลี่ยนรหัสผ่านไปยังอีเมลแล้ว','info')" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:12px 16px;text-align:left;cursor:pointer;font-family:'Prompt',sans-serif;color:#818cf8;font-size:0.85rem;display:flex;align-items:center;gap:10px;">
+                <i data-lucide="key" style="width:16px;height:16px;"></i> เปลี่ยนรหัสผ่าน
+              </button>
+              <button onclick="showConfirm('ออกจากระบบทุกอุปกรณ์?','คุณต้องการออกจากระบบทั้งหมดใช่ไหม?',doLogout)" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:12px 16px;text-align:left;cursor:pointer;font-family:'Prompt',sans-serif;color:#f87171;font-size:0.85rem;display:flex;align-items:center;gap:10px;">
+                <i data-lucide="log-out" style="width:16px;height:16px;"></i> ออกจากระบบทุกอุปกรณ์
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end pageContainer -->
+  </main><!-- end mainContent -->
+
+  <!-- ── BOTTOM NAVIGATION (Mobile) ── -->
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-item active" id="bnav-dashboard" onclick="navigateTo('dashboard',null);setBottomNav('dashboard')">
+      <i data-lucide="layout-dashboard" style="width:20px;height:20px;"></i>
+      <span>หน้าหลัก</span>
+    </div>
+    <div class="bottom-nav-item" id="bnav-orders" onclick="navigateTo('orders',null);setBottomNav('orders')">
+      <i data-lucide="shopping-cart" style="width:20px;height:20px;"></i>
+      <span>ออเดอร์</span>
+    </div>
+    <!-- FAB -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div class="fab" onclick="openFabModal()">
+        <i data-lucide="plus" style="width:24px;height:24px;color:white;"></i>
+      </div>
+      <span style="font-size:0.6rem;color:#475569;">เพิ่ม</span>
+    </div>
+    <div class="bottom-nav-item" id="bnav-products" onclick="navigateTo('products',null);setBottomNav('products')">
+      <i data-lucide="package" style="width:20px;height:20px;"></i>
+      <span>สินค้า</span>
+    </div>
+    <div class="bottom-nav-item" id="bnav-reports" onclick="navigateTo('reports',null);setBottomNav('reports')">
+      <i data-lucide="bar-chart-2" style="width:20px;height:20px;"></i>
+      <span>รายงาน</span>
+    </div>
+  </nav>
+
+</div><!-- end appShell -->
+
+<!-- ══════════════════════════════════════
+     MODAL — Add Order / Expense / Product
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBackdrop(event)">
+  <div class="modal-box" id="modalBox">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 id="modalTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;"></h3>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:6px;cursor:pointer;">
+        <i data-lucide="x" style="width:16px;height:16px;color:#94a3b8;"></i>
+      </button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     CONFIRM DIALOG
+══════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+      <i data-lucide="alert-triangle" style="width:26px;height:26px;color:#f87171;"></i>
+    </div>
+    <h3 id="confirmTitle" style="font-size:1rem;font-weight:700;color:#e2e8f0;margin-bottom:8px;"></h3>
+    <p id="confirmMsg" style="font-size:0.8rem;color:#64748b;margin-bottom:24px;line-height:1.5;"></p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeConfirm()" style="flex:1;padding:10px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;cursor:pointer;font-family:'Prompt',sans-serif;font-size:0.85rem;">ยกเลิก</button>
+      <button id="confirmOkBtn" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;color:white;cursor:pointer;font-family:'Prompt',sans-serif;font-size:0.85rem;font-weight:600;">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Toggle Switch Style -->
+<style>
+.toggle-slider {
+  position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
+  background:rgba(255,255,255,0.1); border-radius:26px; border:1px solid rgba(255,255,255,0.1);
+  transition:0.3s;
+}
+.toggle-slider::before {
+  content:''; position:absolute; height:20px; width:20px; left:2px; bottom:2px;
+  background:white; border-radius:50%; transition:0.3s;
+}
+input:checked + .toggle-slider { background:linear-gradient(135deg,#6366f1,#a855f7); border-color:rgba(99,102,241,0.5); }
+input:checked + .toggle-slider::before { transform:translateX(22px); }
+</style>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ── DATA ──────────────────────────────────────────────
+const ordersData = [
+  { id:'#ORD-001', customer:'สมชาย ใจดี',    product:'เสื้อ Uniqlo × 2',   amount:890,   status:'paid',     date:'05/04/68' },
+  { id:'#ORD-002', customer:'มานี มีนา',     product:'กระเป๋า Coach × 1',  amount:4500,  status:'unpaid',   date:'05/04/68' },
+  { id:'#ORD-003', customer:'วันดี ศรีสุข',  product:'รองเท้า Nike × 1',   amount:3200,  status:'paid',     date:'04/04/68' },
+  { id:'#ORD-004', customer:'ประยุทธ์ สุข',  product:'กางเกง Levi\'s × 3', amount:2100,  status:'shipping', date:'04/04/68' },
+  { id:'#ORD-005', customer:'รัตนา ดีใจ',    product:'เสื้อ Uniqlo × 1',   amount:445,   status:'paid',     date:'03/04/68' },
+  { id:'#ORD-006', customer:'กมล รักดี',     product:'แว่นตา Ray-Ban × 1', amount:5800,  status:'unpaid',   date:'03/04/68' },
+  { id:'#ORD-007', customer:'สุดา วิไล',     product:'กระเป๋า LV × 1',    amount:12500, status:'paid',     date:'02/04/68' },
+  { id:'#ORD-008', customer:'มนัส เก่ง',     product:'นาฬิกา Casio × 1',  amount:1890,  status:'paid',     date:'02/04/68' },
+  { id:'#ORD-009', customer:'ทวี สบาย',      product:'รองเท้า Adidas × 2', amount:4800,  status:'shipping', date:'01/04/68' },
+  { id:'#ORD-010', customer:'จิรา ดี',       product:'เสื้อ Nike × 1',     amount:1200,  status:'paid',     date:'01/04/68' },
+  { id:'#ORD-011', customer:'บุญมี มาก',     product:'กางเกง Zara × 2',   amount:3600,  status:'unpaid',   date:'31/03/68' },
+  { id:'#ORD-012', customer:'สายฝน เย็น',    product:'รองเท้า Vans × 1',  amount:1650,  status:'paid',     date:'31/03/68' },
+];
+
+const expensesData = [
+  { date:'01/04/68', name:'ค่าสินค้า Uniqlo',     category:'สินค้า',        amount:28000, note:'Lot เมษายน' },
+  { date:'02/04/68', name:'ค่าขนส่ง Kerry',        category:'โลจิสติกส์',   amount:4200,  note:'รอบที่ 1' },
+  { date:'03/04/68', name:'ค่าแพ็กเกจจิ้ง',       category:'บรรจุภัณฑ์',   amount:2800,  note:'กล่อง+เทป' },
+  { date:'04/04/68', name:'ค่า Facebook Ads',      category:'การตลาด',      amount:5500,  note:'สัปดาห์ที่ 1' },
+  { date:'04/04/68', name:'ค่าเช่าโกดัง',          category:'ค่าใช้จ่าย',   amount:8000,  note:'รายเดือน' },
+  { date:'05/04/68', name:'ค่าไฟฟ้า',              category:'ค่าสาธารณูปโภค',amount:1850, note:'มีนาคม' },
+  { date:'05/04/68', name:'ค่า TikTok Ads',        category:'การตลาด',      amount:2200,  note:'โปรโมชัน' },
+  { date:'05/04/68', name:'ค่าเงินเดือนพนักงาน',   category:'บุคลากร',      amount:15000, note:'เมษายน' },
+];
+
+const productsData = [
+  { name:'เสื้อ Uniqlo Airism',   price:445,  stock:52,  sold:147, img:'👕', cat:'เสื้อผ้า',   color:'rgba(99,102,241,0.2)' },
+  { name:'รองเท้า Nike Air Max',  price:3200, stock:8,   sold:89,  img:'👟', cat:'รองเท้า',   color:'rgba(239,68,68,0.2)'  },
+  { name:'กระเป๋า Coach Pillow',  price:4500, stock:15,  sold:63,  img:'👜', cat:'กระเป๋า',   color:'rgba(168,85,247,0.2)' },
+  { name:'แว่ตา Ray-Ban',         price:5800, stock:3,   sold:41,  img:'🕶️', cat:'แฟชั่น',    color:'rgba(244,114,182,0.2)'},
+  { name:'นาฬิกา Casio',          price:1890, stock:24,  sold:78,  img:'⌚', cat:'นาฬิกา',    color:'rgba(251,191,36,0.2)' },
+  { name:'กางเกง Levi\'s',        price:700,  stock:36,  sold:95,  img:'👖', cat:'เสื้อผ้า',   color:'rgba(34,197,94,0.2)'  },
+  { name:'รองเท้า Adidas',        price:2400, stock:4,   sold:55,  img:'👟', cat:'รองเท้า',   color:'rgba(249,115,22,0.2)' },
+  { name:'กระเป๋า LV Clone',      price:1200, stock:19,  sold:34,  img:'💼', cat:'กระเป๋า',   color:'rgba(14,165,233,0.2)' },
+];
+
+const catColors = {
+  'สินค้า':'rgba(99,102,241,0.2);color:#818cf8',
+  'โลจิสติกส์':'rgba(14,165,233,0.2);color:#38bdf8',
+  'บรรจุภัณฑ์':'rgba(168,85,247,0.2);color:#c084fc',
+  'การตลาด':'rgba(244,114,182,0.2);color:#f9a8d4',
+  'ค่าใช้จ่าย':'rgba(251,191,36,0.2);color:#fde047',
+  'ค่าสาธารณูปโภค':'rgba(34,197,94,0.2);color:#86efac',
+  'บุคลากร':'rgba(249,115,22,0.2);color:#fdba74',
+};
+
+// ── STATE ──────────────────────────────────────────────
+let sidebarOpen = true;
+let currentPage = 'dashboard';
+let chartInstances = {};
+
+// ── INIT ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  setDate();
+
+  // Check mobile
+  if (window.innerWidth <= 768) { sidebarOpen = false; }
+
+  // Show login then app
+  setTimeout(() => {
+    // Auto-skip login for demo
+  }, 0);
+});
+
+function setDate() {
+  const el = document.getElementById('lastUpdated');
+  if (el) {
+    const now = new Date();
+    el.textContent = now.toLocaleString('th-TH', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short', year:'numeric' });
+  }
+}
+
+// ── LOGIN ──────────────────────────────────────────────
+function doLogin() {
+  const btn = event.currentTarget;
+  addRipple(btn, event);
+  showToast('กำลังเข้าสู่ระบบ...','info');
+  setTimeout(() => {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    lucide.createIcons();
+    initApp();
+    showToast('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ','success');
+  }, 800);
+}
+function doLogout() {
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  lucide.createIcons();
+  showToast('ออกจากระบบเรียบร้อย','success');
+  closeConfirm();
+}
+
+// ── APP INIT ──────────────────────────────────────────
+function initApp() {
+  // Skeleton → real content
+  setTimeout(() => {
+    document.getElementById('skeletonLoader').style.display = 'none';
+    document.getElementById('dashContent').style.display = 'block';
+    animateCounters();
+    initCharts();
+  }, 1200);
+
+  renderOrders(ordersData);
+  renderExpenses(expensesData);
+  renderProducts(productsData);
+}
+
+// ── NAVIGATION ──────────────────────────────────────────
+const pageMeta = {
+  dashboard: { title:'แดชบอร์ด', sub:'ภาพรวมธุรกิจวันนี้' },
+  orders:    { title:'คำสั่งซื้อ', sub:'จัดการคำสั่งซื้อทั้งหมด' },
+  expenses:  { title:'รายจ่าย', sub:'บันทึกรายจ่ายประจำวัน' },
+  products:  { title:'สินค้า', sub:'จัดการคลังสินค้า' },
+  reports:   { title:'รายงาน', sub:'สรุปผลประกอบการ' },
+  settings:  { title:'ตั้งค่า', sub:'กำหนดค่าระบบ' },
+};
+
+function navigateTo(page, navEl) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+
+  // Update sidebar active
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+
+  // Update titles
+  const meta = pageMeta[page] || {};
+  document.getElementById('pageTitle').textContent = meta.title || page;
+  document.getElementById('pageSubtitle').textContent = meta.sub || '';
+
+  currentPage = page;
+
+  // Close mobile sidebar
+  if (window.innerWidth <= 768) closeMobileSidebar();
+
+  // Init charts if needed
+  if (page === 'reports') setTimeout(initReportCharts, 100);
+
+  lucide.createIcons();
+}
+
+// ── SIDEBAR ──────────────────────────────────────────
+function toggleSidebar() {
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('show');
+  } else {
+    sidebarOpen = !sidebarOpen;
+    const sidebar = document.getElementById('sidebar');
+    const navbar  = document.getElementById('navbar');
+    const main    = document.getElementById('mainContent');
+    if (sidebarOpen) {
+      sidebar.classList.remove('collapsed');
+      navbar.style.left = '260px';
+      main.classList.remove('expanded');
+    } else {
+      sidebar.classList.add('collapsed');
+      navbar.style.left = '0';
+      main.classList.add('expanded');
+    }
+  }
+}
+
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ── BOTTOM NAV ──────────────────────────────────────────
+function setBottomNav(page) {
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('bnav-' + page);
+  if (el) el.classList.add('active');
+}
+
+function openFabModal() {
+  openModal('order');
+}
+
+// ── COUNTER ANIMATION ──────────────────────────────────────────
+function animateCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const prefix = el.dataset.prefix || '';
+    const useFormat = el.dataset.format === 'true';
+    let start = 0;
+    const duration = 1500;
+    const step = Math.ceil(target / (duration / 16));
+    const timer = setInterval(() => {
+      start = Math.min(start + step, target);
+      const val = useFormat ? start.toLocaleString('th-TH') : start;
+      el.textContent = prefix + val;
+      if (start >= target) clearInterval(timer);
+    }, 16);
+  });
+}
+
+// ── CHARTS ──────────────────────────────────────────
+const chartDefaults = {
+  color: '#94a3b8',
+  plugins: { legend: { display: false }, tooltip: {
+    backgroundColor: 'rgba(15,23,42,0.9)',
+    titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+    borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+    padding: 12, cornerRadius: 12,
+    callbacks: { label: ctx => ' ฿' + ctx.raw.toLocaleString('th-TH') }
+  }},
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { family: 'Prompt', size: 11 } }, border: { display: false } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { family: 'Prompt', size: 11 }, callback: v => '฿' + (v/1000).toFixed(0) + 'k' }, border: { display: false } }
+  }
+};
+
+function initCharts() {
+  // Sales Line Chart
+  const salesCtx = document.getElementById('salesChart');
+  if (salesCtx && !chartInstances.sales) {
+    chartInstances.sales = new Chart(salesCtx, {
+      type: 'line',
+      data: {
+        labels: ['อา','จ','อ','พ','พฤ','ศ','ส'],
+        datasets: [{
+          label: 'ยอดขาย',
+          data: [42000, 58000, 51000, 67000, 73000, 62000, 84750],
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99,102,241,0.1)',
+          fill: true,
+          tension: 0.45,
+          pointBackgroundColor: '#6366f1',
+          pointBorderColor: 'rgba(99,102,241,0.5)',
+          pointRadius: 4, pointHoverRadius: 7,
+          borderWidth: 2.5,
+        },{
+          label: 'สัปดาห์ที่แล้ว',
+          data: [38000, 49000, 44000, 60000, 65000, 54000, 71000],
+          borderColor: 'rgba(168,85,247,0.5)',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.45, borderDash: [5,5],
+          pointBackgroundColor: '#a855f7', pointRadius: 3,
+          borderWidth: 1.5,
+        }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
+        plugins: { ...chartDefaults.plugins, legend: { display: true, labels: { color: '#64748b', font: { family: 'Prompt', size: 11 }, usePointStyle: true, pointStyleWidth: 10 } } }
+      }
+    });
+  }
+
+  // Expense Bar Chart
+  const expCtx = document.getElementById('expenseChart');
+  if (expCtx && !chartInstances.expense) {
+    chartInstances.expense = new Chart(expCtx, {
+      type: 'bar',
+      data: {
+        labels: ['สินค้า','โลจิ','แพ็ค','Ads','เช่า','ไฟฟ้า','บุคลากร'],
+        datasets: [{
+          data: [28000, 4200, 2800, 7700, 8000, 1850, 15000],
+          backgroundColor: ['rgba(99,102,241,0.7)','rgba(14,165,233,0.7)','rgba(168,85,247,0.7)','rgba(244,114,182,0.7)','rgba(251,191,36,0.7)','rgba(34,197,94,0.7)','rgba(249,115,22,0.7)'],
+          borderRadius: 8, borderSkipped: false,
+        }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+    });
+  }
+}
+
+function initReportCharts() {
+  const mCtx = document.getElementById('monthlyChart');
+  if (mCtx && !chartInstances.monthly) {
+    chartInstances.monthly = new Chart(mCtx, {
+      type: 'bar',
+      data: {
+        labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],
+        datasets: [{
+          label: 'รายรับ',
+          data: [980000,1050000,1100000,1247850,0,0,0,0,0,0,0,0],
+          backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 8, borderSkipped: false,
+        },{
+          label: 'รายจ่าย',
+          data: [820000,880000,830000,892400,0,0,0,0,0,0,0,0],
+          backgroundColor: 'rgba(244,114,182,0.6)', borderRadius: 8, borderSkipped: false,
+        }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
+        plugins: { ...chartDefaults.plugins, legend: { display: true, labels: { color: '#64748b', font: { family: 'Prompt', size: 11 }, usePointStyle: true } } }
+      }
+    });
+  }
+
+  const pCtx = document.getElementById('profitChart');
+  if (pCtx && !chartInstances.profit) {
+    chartInstances.profit = new Chart(pCtx, {
+      type: 'line',
+      data: {
+        labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.'],
+        datasets: [{
+          label: 'กำไรสุทธิ',
+          data: [160000,170000,270000,355450],
+          borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,0.1)',
+          fill: true, tension: 0.4, borderWidth: 2.5,
+          pointBackgroundColor: '#4ade80', pointRadius: 5,
+        }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+    });
+  }
+  lucide.createIcons();
+}
+
+// ── RENDER ORDERS ──────────────────────────────────────────
+function renderOrders(data) {
+  const statusMap = {
+    paid:     '<span class="badge badge-green">ชำระแล้ว</span>',
+    unpaid:   '<span class="badge badge-red">รอชำระ</span>',
+    shipping: '<span class="badge badge-blue">จัดส่ง</span>',
+  };
+  const tbody = document.getElementById('ordersBody');
+  if (!tbody) return;
+  tbody.innerHTML = data.map(o => `
+    <tr>
+      <td style="color:#818cf8;font-weight:600;font-size:0.8rem;">${o.id}</td>
+      <td style="color:#e2e8f0;font-weight:500;">${o.customer}</td>
+      <td style="color:#94a3b8;font-size:0.8rem;">${o.product}</td>
+      <td style="color:#e2e8f0;font-weight:700;">฿${o.amount.toLocaleString('th-TH')}</td>
+      <td>${statusMap[o.status]||''}</td>
+      <td style="color:#64748b;font-size:0.75rem;">${o.date}</td>
+      <td>
+        <button onclick="showToast('ดูรายละเอียด ${o.id}','info')" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:5px 10px;font-size:0.7rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">ดู</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterOrders(q) {
+  const filtered = ordersData.filter(o =>
+    o.customer.includes(q) || o.id.includes(q) || o.product.includes(q)
+  );
+  renderOrders(filtered);
+}
+
+function filterByStatus(status) {
+  const filtered = status ? ordersData.filter(o => o.status === status) : ordersData;
+  renderOrders(filtered);
+}
+
+// ── RENDER EXPENSES ──────────────────────────────────────────
+function renderExpenses(data) {
+  // Mobile Cards
+  const cards = document.getElementById('expenseMobileCards');
+  if (cards) {
+    cards.innerHTML = data.map(e => {
+      const colorStr = catColors[e.category] || 'rgba(99,102,241,0.2);color:#818cf8';
+      const [bg, col] = colorStr.split(';color:');
+      return `
+      <div class="glass" style="padding:14px;display:flex;align-items:center;gap:12px;">
+        <div style="background:${bg};border-radius:12px;padding:10px;flex-shrink:0;">
+          <i data-lucide="receipt" style="width:18px;height:18px;color:${col};"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.875rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            <span class="tag" style="background:${bg};color:${col};">${e.category}</span>
+            <span style="font-size:0.65rem;color:#475569;">${e.date}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:0.95rem;font-weight:800;color:#f87171;">฿${e.amount.toLocaleString('th-TH')}</div>
+        </div>
+      </div>`;
+    }).join('');
+    lucide.createIcons();
+  }
+
+  // Desktop Table
+  const tbody = document.getElementById('expenseBody');
+  if (tbody) {
+    tbody.innerHTML = data.map(e => {
+      const colorStr = catColors[e.category] || 'rgba(99,102,241,0.2);color:#818cf8';
+      const [bg, col] = colorStr.split(';color:');
+      return `<tr>
+        <td style="color:#64748b;font-size:0.8rem;">${e.date}</td>
+        <td style="color:#e2e8f0;font-weight:500;">${e.name}</td>
+        <td><span class="tag" style="background:${bg};color:${col};">${e.category}</span></td>
+        <td style="color:#f87171;font-weight:700;">฿${e.amount.toLocaleString('th-TH')}</td>
+        <td style="color:#64748b;font-size:0.8rem;">${e.note}</td>
+        <td><button onclick="showToast('แก้ไข ${e.name}','info')" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:4px 10px;font-size:0.7rem;color:#818cf8;cursor:pointer;font-family:'Prompt',sans-serif;">แก้ไข</button></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// ── RENDER PRODUCTS ──────────────────────────────────────────
+function renderProducts(data) {
+  const grid = document.getElementById('productGrid');
+  if (!grid) return;
+  grid.innerHTML = data.map(p => {
+    const isLow = p.stock < 10;
+    return `
+    <div class="product-card" onclick="showToast('${p.name} - ${p.cat}','info')">
+      <div style="background:${p.color};padding:24px;text-align:center;font-size:2.5rem;">${p.img}</div>
+      <div style="padding:14px;">
+        <div style="font-size:0.8rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-size:0.7rem;color:#64748b;margin-bottom:8px;">${p.cat}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:0.95rem;font-weight:800;color:#818cf8;">฿${p.price.toLocaleString('th-TH')}</div>
+          <span class="${isLow ? 'badge badge-red' : 'badge badge-green'}" style="font-size:0.65rem;">
+            ${isLow ? '⚠ ' : ''}${p.stock} ชิ้น
+          </span>
+        </div>
+        <div style="margin-top:8px;font-size:0.7rem;color:#64748b;">ขายแล้ว: <span style="color:#a855f7;">${p.sold} ชิ้น</span></div>
+        <!-- Stock Bar -->
+        <div style="height:3px;border-radius:4px;background:rgba(255,255,255,0.08);margin-top:10px;overflow:hidden;">
+          <div style="height:100%;width:${Math.min(p.stock/60*100,100)}%;background:${isLow ? 'linear-gradient(90deg,#ef4444,#f97316)' : 'linear-gradient(90deg,#6366f1,#a855f7)'};border-radius:4px;transition:width 0.5s;"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MODAL ──────────────────────────────────────────
+function openModal(type) {
+  const overlay = document.getElementById('modalOverlay');
+  const title   = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+
+  const forms = {
+    order: {
+      t: 'เพิ่มคำสั่งซื้อ',
+      html: `
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อลูกค้า</label>
+            <input type="text" class="input-glass" placeholder="ระบุชื่อลูกค้า"></div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">สินค้า</label>
+            <input type="text" class="input-glass" placeholder="ชื่อสินค้า"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">จำนวน</label>
+              <input type="number" class="input-glass" placeholder="1" min="1"></div>
+            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ราคา</label>
+              <input type="number" class="input-glass" placeholder="0.00"></div>
+          </div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">สถานะ</label>
+            <select class="input-glass"><option value="paid">ชำระแล้ว</option><option value="unpaid">รอชำระ</option><option value="shipping">จัดส่ง</option></select></div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมายเหตุ</label>
+            <textarea class="input-glass" rows="2" placeholder="หมายเหตุ (ถ้ามี)" style="resize:none;"></textarea></div>
+          <button onclick="saveModal('order')" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">บันทึกคำสั่งซื้อ</button>
+        </div>`
+    },
+    expense: {
+      t: 'บันทึกรายจ่าย',
+      html: `
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">รายการ</label>
+            <input type="text" class="input-glass" placeholder="ชื่อรายจ่าย"></div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมวดหมู่</label>
+            <select class="input-glass"><option>สินค้า</option><option>โลจิสติกส์</option><option>บรรจุภัณฑ์</option><option>การตลาด</option><option>ค่าใช้จ่าย</option><option>บุคลากร</option></select></div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">จำนวนเงิน (บาท)</label>
+            <input type="number" class="input-glass" placeholder="0.00"></div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมายเหตุ</label>
+            <input type="text" class="input-glass" placeholder="หมายเหตุ"></div>
+          <button onclick="saveModal('expense')" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">บันทึกรายจ่าย</button>
+        </div>`
+    },
+    product: {
+      t: 'เพิ่มสินค้า',
+      html: `
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ชื่อสินค้า</label>
+            <input type="text" class="input-glass" placeholder="ชื่อสินค้า"></div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">หมวดหมู่</label>
+            <select class="input-glass"><option>เสื้อผ้า</option><option>รองเท้า</option><option>กระเป๋า</option><option>แฟชั่น</option><option>นาฬิกา</option></select></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ราคา</label>
+              <input type="number" class="input-glass" placeholder="0.00"></div>
+            <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">สต็อก</label>
+              <input type="number" class="input-glass" placeholder="0"></div>
+          </div>
+          <div><label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:6px;">ต้นทุน</label>
+            <input type="number" class="input-glass" placeholder="0.00"></div>
+          <button onclick="saveModal('product')" class="btn-primary ripple-container py-3 rounded-xl text-white font-semibold text-sm" style="width:100%;">เพิ่มสินค้า</button>
+        </div>`
+    }
+  };
+
+  const f = forms[type] || forms.order;
+  title.textContent = f.t;
+  content.innerHTML = f.html;
+  overlay.classList.add('open');
+  lucide.createIcons();
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOnBackdrop(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+function saveModal(type) {
+  closeModal();
+  const msgs = { order:'เพิ่มคำสั่งซื้อเรียบร้อย!', expense:'บันทึกรายจ่ายเรียบร้อย!', product:'เพิ่มสินค้าเรียบร้อย!' };
+  showToast(msgs[type] || 'บันทึกเรียบร้อย!', 'success');
+}
+
+// ── CONFIRM DIALOG ──────────────────────────────────────────
+function showConfirm(title, msg, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmOkBtn').onclick = () => { cb && cb(); closeConfirm(); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+
+// ── TOAST ──────────────────────────────────────────
+function showToast(msg, type='success') {
+  const icons = { success:'check-circle', error:'x-circle', info:'info' };
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<i data-lucide="${icons[type]||'info'}" style="width:18px;height:18px;flex-shrink:0;"></i><span>${msg}</span>`;
+  container.appendChild(toast);
+  lucide.createIcons();
+  setTimeout(() => { if (toast.parentNode) container.removeChild(toast); }, 3500);
+}
+
+// ── NOTIFICATION PANEL ──────────────────────────────────────────
+function showNotifPanel() {
+  showToast('คุณมีการแจ้งเตือนใหม่ 3 รายการ','info');
+}
+
+// ── RIPPLE ──────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.ripple-container');
+  if (!btn) return;
+  addRipple(btn, e);
+});
+
+function addRipple(btn, e) {
+  const r = document.createElement('span');
+  r.classList.add('ripple');
+  const rect = btn.getBoundingClientRect();
+  r.style.left = (e.clientX - rect.left) + 'px';
+  r.style.top  = (e.clientY - rect.top)  + 'px';
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+}
+
+// ── RESPONSIVE RESIZE ──────────────────────────────────────────
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+    if (sidebarOpen) {
+      document.getElementById('navbar').style.left = '260px';
+      document.getElementById('mainContent').classList.remove('expanded');
+    }
+  }
+});
+
+// ── AUTO LOGIN FOR DEMO ──────────────────────────────────────────
+// Uncomment below to skip login:
+// window.addEventListener('load', () => { doLogin(); });
+</script>
+</body>
+</html>
